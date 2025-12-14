@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![BingX PHP SDK](https://github.com/user-attachments/assets/8670e15d-7c67-4440-93bd-076ccb7389c0)
+![BingX Golang SDK](https://github.com/user-attachments/assets/8670e15d-7c67-4440-93bd-076ccb7389c0)
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -91,7 +91,6 @@ trading applications on the BingX platform.
 
 ### **Production Ready**
 
-- ✅ **Battle-Tested** - Converted from production PHP SDK
 - 🔄 **Maintained** - Regular updates and bug fixes
 - 📊 **Monitoring Ready** - Comprehensive error types for observability
 - 🌐 **WebSocket Support** - Real-time data streaming capabilities
