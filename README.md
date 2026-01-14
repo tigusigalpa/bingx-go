@@ -10,7 +10,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/tigusigalpa/bingx-go?style=flat-square)](https://github.com/tigusigalpa/bingx-go/releases)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue?style=flat-square&logo=go)](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
 
-**Professional-Grade Go SDK for BingX Cryptocurrency Exchange**
+**Professional-Grade Golang SDK for BingX Cryptocurrency Exchange**
 
 *Comprehensive API integration for USDT-M & Coin-M Perpetual Futures, Spot Trading, and Advanced Market Operations*
 
@@ -51,8 +51,8 @@
 
 ## ✨ About
 
-**BingX Go SDK** is an enterprise-grade, production-ready Go library designed for seamless integration with the BingX
-cryptocurrency exchange API. Built from the ground up with modern Go idioms and best practices, this SDK provides
+**BingX Go SDK** is an enterprise-grade, production-ready Golang library designed for seamless integration with the
+BingX cryptocurrency exchange API. Built from the ground up with modern Go idioms and best practices, this SDK provides
 developers with a robust, type-safe, and highly performant solution for algorithmic trading, market analysis, and
 portfolio management.
 
@@ -85,7 +85,7 @@ trading applications on the BingX platform.
 
 - 🚀 **Easy to Use** - Intuitive API with fluent interfaces
 - 🔧 **Flexible Configuration** - Functional options pattern for customization
-- 🎨 **Idiomatic Go** - Follows Go best practices and conventions
+- 🎨 **Idiomatic Go** - Follows Golang best practices and conventions
 - 🧪 **Testable** - Designed with testing in mind
 - 📦 **Zero Dependencies** - Minimal external dependencies (only gorilla/websocket)
 
