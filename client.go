@@ -3,20 +3,21 @@ package bingx
 import (
 	"github.com/tigusigalpa/bingx-go/http"
 	"github.com/tigusigalpa/bingx-go/services"
+	"github.com/tigusigalpa/bingx-go/websocket"
 )
 
 type Client struct {
-	httpClient   *http.BaseHTTPClient
-	market       *services.MarketService
-	account      *services.AccountService
-	trade        *services.TradeService
-	contract     *services.ContractService
-	listenKey    *services.ListenKeyService
-	wallet       *services.WalletService
-	spotAccount  *services.SpotAccountService
-	subAccount   *services.SubAccountService
-	copyTrading  *services.CopyTradingService
-	coinMClient  *CoinMClient
+	httpClient  *http.BaseHTTPClient
+	market      *services.MarketService
+	account     *services.AccountService
+	trade       *services.TradeService
+	contract    *services.ContractService
+	listenKey   *services.ListenKeyService
+	wallet      *services.WalletService
+	spotAccount *services.SpotAccountService
+	subAccount  *services.SubAccountService
+	copyTrading *services.CopyTradingService
+	coinMClient *CoinMClient
 }
 
 func NewClient(apiKey, apiSecret string, options ...ClientOption) *Client {
@@ -145,4 +146,12 @@ func (c *Client) GetSymbols() (map[string]interface{}, error) {
 
 func (c *Client) CreateOrder(params map[string]interface{}) (map[string]interface{}, error) {
 	return c.trade.CreateOrder(params)
+}
+
+func (c *Client) NewMarketDataStream() *websocket.MarketDataStream {
+	return websocket.NewMarketDataStream()
+}
+
+func (c *Client) NewAccountDataStream(listenKey string) *websocket.AccountDataStream {
+	return websocket.NewAccountDataStream(listenKey)
 }

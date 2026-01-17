@@ -36,6 +36,7 @@
     - [Coin-M Futures](#coin-m-perpetual-futures)
     - [Sub-Accounts](#sub-account-management)
     - [Copy Trading](#copy-trading-operations)
+    - [WebSocket Streaming](#websocket-streaming)
 - [Advanced Features](#-advanced-features)
 - [Configuration](#-configuration)
 - [Error Handling](#-error-handling)
@@ -536,6 +537,78 @@ summary, err := client.CopyTrading().GetProfitSummary()
 err = client.CopyTrading().SetCommission(5.0) // 5% commission
 ```
 
+### WebSocket Streaming
+
+#### Market Data Stream
+
+```go
+// Create market data stream
+stream := client.NewMarketDataStream()
+
+// Connect to WebSocket
+if err := stream.Connect(); err != nil {
+    log.Fatal(err)
+}
+defer stream.Disconnect()
+
+// Register message handler
+stream.OnMessage(func(data map[string]interface{}) {
+    fmt.Printf("Received: %+v\n", data)
+})
+
+// Subscribe to various data types
+stream.SubscribeTrade("BTC-USDT")
+stream.SubscribeKline("BTC-USDT", "1m")
+stream.SubscribeDepth("BTC-USDT", 20)
+stream.SubscribeTicker("BTC-USDT")
+stream.SubscribeBookTicker("BTC-USDT")
+
+// Start listening (blocking)
+stream.Listen()
+```
+
+#### Account Data Stream
+
+```go
+// Generate listen key
+resp, err := client.ListenKey().Generate()
+if err != nil {
+    log.Fatal(err)
+}
+listenKey := resp["listenKey"].(string)
+
+// Create account data stream
+stream := client.NewAccountDataStream(listenKey)
+
+if err := stream.Connect(); err != nil {
+    log.Fatal(err)
+}
+defer stream.Disconnect()
+
+// Listen for account updates
+stream.OnAccountUpdate(func(eventType string, data map[string]interface{}) {
+    fmt.Printf("Event [%s]: %+v\n", eventType, data)
+})
+
+// Listen for specific update types
+stream.OnBalanceUpdate(func(balances interface{}) {
+    fmt.Printf("Balance: %+v\n", balances)
+})
+
+stream.OnPositionUpdate(func(positions interface{}) {
+    fmt.Printf("Positions: %+v\n", positions)
+})
+
+stream.OnOrderUpdate(func(order interface{}) {
+    fmt.Printf("Order: %+v\n", order)
+})
+
+// Start listening
+stream.Listen()
+```
+
+For detailed WebSocket documentation, see [websocket/README.md](websocket/README.md).
+
 ---
 
 ## 🔧 Advanced Features
@@ -678,6 +751,8 @@ client := bingx.NewClient(
 | `client.SubAccount()`                             | Access sub-account service        | `*SubAccountService`   |
 | `client.CopyTrading()`                            | Access copy trading service       | `*CopyTradingService`  |
 | `client.CoinM()`                                  | Access Coin-M futures client      | `*CoinMClient`         |
+| `client.NewMarketDataStream()`                    | Create market data WebSocket      | `*MarketDataStream`    |
+| `client.NewAccountDataStream(listenKey)`          | Create account data WebSocket     | `*AccountDataStream`   |
 | `client.GetHTTPClient()`                          | Get underlying HTTP client        | `*http.BaseHTTPClient` |
 | `client.GetEndpoint()`                            | Get API endpoint URL              | `string`               |
 | `client.GetAPIKey()`                              | Get configured API key            | `string`               |
