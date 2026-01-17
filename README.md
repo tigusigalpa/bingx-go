@@ -56,6 +56,8 @@ BingX cryptocurrency exchange API. Built from the ground up with modern Go idiom
 developers with a robust, type-safe, and highly performant solution for algorithmic trading, market analysis, and
 portfolio management.
 
+**📦 Package:** [pkg.go.dev/github.com/tigusigalpa/bingx-go](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
+
 ### 🎯 Mission
 
 To empower Go developers with a reliable, efficient, and comprehensive toolkit for building sophisticated cryptocurrency
