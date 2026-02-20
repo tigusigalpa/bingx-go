@@ -10,25 +10,19 @@
 [![GitHub Release](https://img.shields.io/github/v/release/tigusigalpa/bingx-go?style=flat-square)](https://github.com/tigusigalpa/bingx-go/releases)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue?style=flat-square&logo=go)](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
 
-**Professional-Grade Golang SDK for BingX Cryptocurrency Exchange**
-
-*Comprehensive API integration for USDT-M & Coin-M Perpetual Futures, Spot Trading, and Advanced Market Operations*
-
-[Features](#-features) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Examples](#-usage-examples) • [Support](#-support)
-
 </div>
 
----
+Go client for the [BingX](https://bingx.com) cryptocurrency exchange API. Covers USDT-M and Coin-M perpetual futures, spot trading, copy trading, sub-accounts, and WebSocket streaming. 220+ API methods.
 
-## 📖 Table of Contents
+**Package:** [pkg.go.dev/github.com/tigusigalpa/bingx-go](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
 
-- [About](#-about)
-- [Why Choose BingX Go SDK](#-why-choose-bingx-go-sdk)
-- [Features](#-features)
-- [Architecture](#-architecture)
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Usage Examples](#-usage-examples)
+## Table of Contents
+
+- [Features](#features)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage Examples](#usage-examples)
     - [Market Data](#market-service---market-data)
     - [Account Management](#account-service---account-management)
     - [Trading Operations](#trade-service---trading-operations)
@@ -37,81 +31,27 @@
     - [Sub-Accounts](#sub-account-management)
     - [Copy Trading](#copy-trading-operations)
     - [WebSocket Streaming](#websocket-streaming)
-- [Advanced Features](#-advanced-features)
-- [Configuration](#-configuration)
-- [Error Handling](#-error-handling)
-- [Best Practices](#-best-practices)
-- [Testing](#-testing)
-- [Performance](#-performance)
-- [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Support](#-support)
+- [Advanced Features](#advanced-features)
+- [Configuration](#configuration)
+- [Error Handling](#error-handling)
+- [Best Practices](#best-practices)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## ✨ About
+## Features
 
-**BingX Go SDK** is an enterprise-grade, production-ready Golang library designed for seamless integration with the
-BingX cryptocurrency exchange API. Built from the ground up with modern Go idioms and best practices, this SDK provides
-developers with a robust, type-safe, and highly performant solution for algorithmic trading, market analysis, and
-portfolio management.
-
-**📦 Package:** [pkg.go.dev/github.com/tigusigalpa/bingx-go](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
-
-### 🎯 Mission
-
-To empower Go developers with a reliable, efficient, and comprehensive toolkit for building sophisticated cryptocurrency
-trading applications on the BingX platform.
-
----
-
-## 🌟 Why Choose BingX Go SDK?
-
-### **Complete API Coverage**
-
-- ✅ **220+ API Methods** - Every endpoint from BingX API v1 & v2
-- ✅ **USDT-M Perpetual Futures** - Full support for USDT-margined contracts
-- ✅ **Coin-M Perpetual Futures** - Complete Coin-margined futures implementation
-- ✅ **Spot Trading** - Comprehensive spot market operations
-- ✅ **Advanced Features** - Copy trading, sub-accounts, TWAP orders
-
-### **Enterprise-Grade Quality**
-
-- 🛡️ **Type-Safe** - Leverages Go's strong typing for compile-time safety
-- 🔒 **Secure** - HMAC-SHA256 signature with configurable encoding (hex/base64)
-- ⚡ **High Performance** - Optimized for low latency and high throughput
-- 🏗️ **Modular Architecture** - Clean separation of concerns with service-based design
-- 📝 **Well Documented** - Comprehensive inline documentation and examples
-
-### **Developer Experience**
-
-- 🚀 **Easy to Use** - Intuitive API with fluent interfaces
-- 🔧 **Flexible Configuration** - Functional options pattern for customization
-- 🎨 **Idiomatic Go** - Follows Golang best practices and conventions
-- 🧪 **Testable** - Designed with testing in mind
-- 📦 **Zero Dependencies** - Minimal external dependencies (only gorilla/websocket)
-
-### **Production Ready**
-
-- 🔄 **Maintained** - Regular updates and bug fixes
-- 📊 **Monitoring Ready** - Comprehensive error types for observability
-- 🌐 **WebSocket Support** - Real-time data streaming capabilities
-- 🔐 **Rate Limit Handling** - Built-in rate limit exception handling
-
----
-
-## 🚀 Features
-
-### 📊 Comprehensive Service Coverage
+### Service coverage
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-#### **USDT-M Perpetual Futures**
+#### USDT-M Perpetual Futures
 
-- **🏪 Market Service** (40+ methods)
+- **Market Service** (40+ methods)
     - Real-time & historical prices
     - Market depth & order books
     - Candlestick data (K-lines)
@@ -121,7 +61,7 @@ trading applications on the BingX platform.
     - Long/short ratios
     - Basis data & sentiment analysis
 
-- **👤 Account Service** (20+ methods)
+- **Account Service** (20+ methods)
     - Balance & asset management
     - Position tracking & monitoring
     - Leverage configuration
@@ -130,7 +70,7 @@ trading applications on the BingX platform.
     - API permissions & rate limits
     - Balance history & deposits
 
-- **🔄 Trade Service** (25+ methods)
+- **Trade Service** (25+ methods)
     - Order creation & management
     - Batch order operations
     - Order modification & cancellation
@@ -139,7 +79,7 @@ trading applications on the BingX platform.
     - Test orders (sandbox)
     - Commission calculations
 
-- **💰 Wallet Service** (6+ methods)
+- **Wallet Service** (6+ methods)
     - Deposit & withdrawal management
     - Address generation
     - Transaction history
@@ -151,40 +91,40 @@ trading applications on the BingX platform.
 
 #### **Advanced Features**
 
-- **💵 Spot Account Service** (8+ methods)
+- **Spot Account Service** (8+ methods)
     - Spot balance management
     - Universal transfers
     - Internal transfers
     - Transfer history
     - Multi-account support
 
-- **👥 Sub-Account Service** (20+ methods)
+- **Sub-Account Service** (20+ methods)
     - Sub-account creation & management
     - API key management
     - Asset transfers
     - Deposit address management
     - Authorization controls
 
-- **🔄 Copy Trading Service** (13+ methods)
+- **Copy Trading Service** (13+ methods)
     - Futures copy trading
     - Spot copy trading
     - Profit tracking
     - Commission management
     - Trading pair configuration
 
-- **📋 Contract Service** (3+ methods)
+- **Contract Service** (3+ methods)
     - Standard contract positions
     - Order history
     - Balance queries
 
-- **🔐 Listen Key Service** (3+ methods)
+- **Listen Key Service** (3+ methods)
     - WebSocket authentication
     - Key generation & extension
     - Session management
 
 #### **Coin-M Perpetual Futures**
 
-- **🪙 Coin-M Market** (6+ methods)
+- **Coin-M Market** (6+ methods)
     - Contract specifications
     - Ticker & price data
     - Market depth
@@ -192,7 +132,7 @@ trading applications on the BingX platform.
     - Open interest
     - Funding rates
 
-- **🪙 Coin-M Trade** (17+ methods)
+- **Coin-M Trade** (17+ methods)
     - Order management
     - Position tracking
     - Leverage & margin
@@ -203,7 +143,7 @@ trading applications on the BingX platform.
 </tr>
 </table>
 
-### 🎯 Key Capabilities
+### Key capabilities
 
 | Feature              | Description                                                |
 |----------------------|------------------------------------------------------------|
@@ -218,9 +158,7 @@ trading applications on the BingX platform.
 
 ---
 
-## 🏗️ Architecture
-
-The SDK follows a clean, modular architecture designed for maintainability and extensibility:
+## Architecture
 
 ```
 bingx-go/
@@ -257,51 +195,20 @@ bingx-go/
 
 ---
 
-## 📦 Installation
+## Installation
 
-### Prerequisites
-
-- **Go 1.21+** - Latest stable Go version recommended
-- **Git** - For package management
-- **BingX Account** - API keys required for authenticated endpoints
-
-### Quick Install
+- Go 1.21+
+- BingX account with API keys (for authenticated endpoints)
 
 ```bash
-# Install the package
 go get github.com/tigusigalpa/bingx-go
-
-# Update to latest version
-go get -u github.com/tigusigalpa/bingx-go
 ```
 
-### Verify Installation
-
-```go
-package main
-
-import (
-    "fmt"
-    bingx "github.com/tigusigalpa/bingx-go"
-)
-
-func main() {
-    client := bingx.NewClient("", "", bingx.WithBaseURI("https://open-api.bingx.com"))
-    fmt.Println("BingX SDK installed successfully!")
-}
-```
-
-### Dependencies
-
-The SDK has minimal dependencies:
-
-- `github.com/gorilla/websocket` - WebSocket support (optional, only if using WebSocket features)
+Only external dependency: `github.com/gorilla/websocket` (for WebSocket features)
 
 ---
 
-## ⚡ Quick Start
-
-### Basic Usage
+## Quick Start
 
 ```go
 package main
@@ -354,7 +261,7 @@ func main() {
 
 ---
 
-## 📚 Usage Examples
+## Usage Examples
 
 ### Market Service - Market Data
 
@@ -611,7 +518,7 @@ For detailed WebSocket documentation, see [websocket/README.md](websocket/README
 
 ---
 
-## 🔧 Advanced Features
+## Advanced Features
 
 ### Commission Calculation
 
@@ -684,9 +591,7 @@ klines, err := client.Market().GetKlines(
 
 ---
 
-## ⚙️ Configuration
-
-### Client Configuration Options
+## Configuration
 
 ```go
 client := bingx.NewClient(
@@ -734,7 +639,7 @@ client := bingx.NewClient(
 
 ---
 
-## 📖 API Reference
+## API Reference
 
 ### Client Methods
 
@@ -859,9 +764,7 @@ if data, ok := response["data"].(map[string]interface{}); ok {
 
 ---
 
-## 🛡️ Error Handling
-
-The SDK provides custom error types for different scenarios:
+## Error Handling
 
 ```go
 import "github.com/tigusigalpa/bingx-go/errors"
@@ -895,12 +798,12 @@ if err != nil {
 
 ---
 
-## � Best Practices
+## Best Practices
 
 ### Security
 
 ```go
-// ✅ DO: Use environment variables for credentials
+// DO: Use environment variables for credentials
 apiKey := os.Getenv("BINGX_API_KEY")
 apiSecret := os.Getenv("BINGX_API_SECRET")
 
@@ -983,9 +886,9 @@ wg.Wait()
 
 ---
 
-## 🧪 Testing
+## Testing
 
-### Unit Testing
+### Unit testing
 
 ```go
 package main
@@ -1048,11 +951,7 @@ go test -short ./...
 
 ---
 
-## ⚡ Performance
-
-### Benchmarks
-
-The SDK is optimized for high-performance trading applications:
+## Performance
 
 - **Request Latency**: < 50ms (network dependent)
 - **Memory Usage**: ~2MB per client instance
@@ -1080,71 +979,37 @@ func makeRequest() {
 
 ---
 
-## �️ Roadmap
+## Roadmap
 
-### Current Version (v1.0.0)
+### Planned (v1.1.0)
 
-- ✅ Complete API coverage
-- ✅ All service implementations
-- ✅ Error handling
-- ✅ Documentation
+- Order builder with fluent interface
+- Rate limiter middleware
+- Request/response logging
+- Retry with exponential backoff
 
-### Planned Features (v1.1.0)
+### Future (v2.0.0)
 
-- 🔄 WebSocket streaming implementation
-- 🔄 Order builder with fluent interface
-- 🔄 Rate limiter middleware
-- 🔄 Request/response logging
-- 🔄 Retry mechanism with exponential backoff
-
-### Future Enhancements (v2.0.0)
-
-- 📊 Built-in technical indicators
-- 🤖 Strategy backtesting framework
-- 📈 Portfolio management tools
-- 🔔 Event-driven architecture
-- 📱 Mobile-optimized examples
+- Built-in technical indicators
+- Strategy backtesting framework
+- Portfolio management tools
+- Event-driven architecture
 
 ---
 
-## 🔑 Creating API Keys
+## Creating API Keys
 
-### Step-by-Step Guide
-
-1. **Login** to your BingX account
-2. **Navigate** to [API Management](https://bingx.com/en-US/accounts/api)
-3. **Click** "Create API"
-4. **Configure** permissions:
-    - ✅ Enable "Read" for market data
-    - ✅ Enable "Trade" for order placement
-    - ✅ Enable "Withdraw" only if needed (not recommended)
-5. **Set IP Whitelist** (highly recommended)
-6. **Save** your API Key and Secret Key
-7. ⚠️ **Important**: Secret Key is shown only once - store it securely!
-
-### Security Recommendations
-
-- 🔒 Never share your API keys
-- 🔒 Use separate keys for different applications
-- 🔒 Enable IP whitelist restrictions
-- 🔒 Regularly rotate API keys
-- 🔒 Monitor API key usage in BingX dashboard
-- 🔒 Disable keys immediately if compromised
+1. Login to your BingX account
+2. Go to [API Management](https://bingx.com/en-US/accounts/api)
+3. Create API key, configure permissions (Read, Trade)
+4. Set IP whitelist (recommended)
+5. Save your API Key and Secret Key — the secret is shown only once
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions from the community! Here's how you can help:
-
-### Ways to Contribute
-
-- 🐛 **Report Bugs** - Open an issue with detailed reproduction steps
-- 💡 **Suggest Features** - Share your ideas for improvements
-- 📝 **Improve Documentation** - Fix typos, add examples, clarify concepts
-- 🔧 **Submit Code** - Fix bugs or implement new features
-
-### Development Setup
+### Development setup
 
 ```bash
 # Clone the repository
@@ -1172,93 +1037,25 @@ golangci-lint run
 7. Push to the branch (`git push origin feature/amazing-feature`)
 8. Open a Pull Request
 
-### Code Style
+### Code style
 
 - Follow [Effective Go](https://golang.org/doc/effective_go) guidelines
 - Use `gofmt` for formatting
 - Add comments for exported functions
-- Keep functions focused and small
-- Write descriptive commit messages
 
 ---
 
-## 📝 License
+## License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE).
 
-### MIT License Summary
+## Disclaimer
 
-✅ Commercial use  
-✅ Modification  
-✅ Distribution  
-✅ Private use
+This SDK is provided "as-is". Cryptocurrency trading carries significant financial risk. Always test in a sandbox environment before production use. The authors are not responsible for any financial losses.
 
-⚠️ Liability and warranty limitations apply
+## Links
 
----
-
-## ⚠️ Disclaimer
-
-**Important Notice:**
-
-- This SDK is provided "as-is" without any warranties
-- Cryptocurrency trading carries significant financial risk
-- Past performance does not guarantee future results
-- Always test thoroughly in a sandbox environment before production use
-- The authors are not responsible for any financial losses
-- Use at your own risk
-
-**Recommendations:**
-
-- Start with small amounts
-- Implement proper risk management
-- Monitor your trading bots continuously
-- Keep your API keys secure
-- Stay informed about market conditions
-
----
-
-## 📧 Support
-
-### Get Help
-
-- 📖 **Documentation**: Read this README and inline code documentation
-- 💬 **GitHub Issues**: [Report bugs or request features](https://github.com/tigusigalpa/bingx-go/issues)
-- 📚 **BingX API Docs**: [Official API Documentation](https://bingx-api.github.io/docs/)
-- 💡 **Examples**: Check the `examples/` directory for code samples
-
-### Community
-
-- ⭐ **Star this repo** if you find it useful
-- 🐦 **Share** with other Go developers
-- 🔔 **Watch** for updates and new releases
-
-### Commercial Support
-
-For enterprise support, custom development, or consulting services, please contact the maintainers.
-
----
-
-## 🙏 Acknowledgments
-
-- **BingX Team** - For providing comprehensive API documentation
-- **Go Community** - For excellent tools and libraries
-- **Contributors** - Thank you to everyone who has contributed to this project
-
----
-
-## 📊 Project Stats
-
-![GitHub stars](https://img.shields.io/github/stars/tigusigalpa/bingx-go?style=social)
-![GitHub forks](https://img.shields.io/github/forks/tigusigalpa/bingx-go?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/tigusigalpa/bingx-go?style=social)
-
----
-
-<div align="center">
-
-**Made with ❤️ by the Go Community**
-
-[⬆ Back to Top](#bingx-go-sdk)
-
-</div>
+- [GitHub Repository](https://github.com/tigusigalpa/bingx-go)
+- [Issues](https://github.com/tigusigalpa/bingx-go/issues)
+- [BingX API Documentation](https://bingx-api.github.io/docs/)
+- [GoDoc](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
