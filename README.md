@@ -17,7 +17,7 @@ spot trading, copy trading, sub-accounts, and WebSocket streaming. 220+ API meth
 
 **Package:** [pkg.go.dev/github.com/tigusigalpa/bingx-go](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
 
-> 📖 **[Full documentation available on Wiki](https://github.com/tigusigalpa/bingx-php/wiki)**
+> 📖 **[Full documentation available on Wiki](https://github.com/tigusigalpa/bingx-go/wiki)**
 
 ## Table of Contents
 
