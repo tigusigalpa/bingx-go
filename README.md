@@ -12,9 +12,12 @@
 
 </div>
 
-Go client for the [BingX](https://bingx.com) cryptocurrency exchange API. Covers USDT-M and Coin-M perpetual futures, spot trading, copy trading, sub-accounts, and WebSocket streaming. 220+ API methods.
+Go client for the [BingX](https://bingx.com) cryptocurrency exchange API. Covers USDT-M and Coin-M perpetual futures,
+spot trading, copy trading, sub-accounts, and WebSocket streaming. 220+ API methods.
 
 **Package:** [pkg.go.dev/github.com/tigusigalpa/bingx-go](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
+
+> 📖 **[Full documentation available on Wiki](https://github.com/tigusigalpa/bingx-php/wiki)**
 
 ## Table of Contents
 
@@ -1051,7 +1054,8 @@ MIT License — see [LICENSE](LICENSE).
 
 ## Disclaimer
 
-This SDK is provided "as-is". Cryptocurrency trading carries significant financial risk. Always test in a sandbox environment before production use. The authors are not responsible for any financial losses.
+This SDK is provided "as-is". Cryptocurrency trading carries significant financial risk. Always test in a sandbox
+environment before production use. The authors are not responsible for any financial losses.
 
 ## Links
 
