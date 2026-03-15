@@ -11,7 +11,7 @@ func NewMarketService(client *http.BaseHTTPClient) *MarketService {
 }
 
 func (s *MarketService) GetFuturesSymbols() (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v2/market/symbols", nil)
+	return s.client.Request("GET", "/openApi/swap/v2/quote/contracts", nil)
 }
 
 // GetSpotSymbols retrieves spot trading symbols
