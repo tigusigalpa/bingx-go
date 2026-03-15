@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![BingX Golang SDK](https://github.com/user-attachments/assets/61babf48-746f-469e-aeed-5058a9337d86)
+![BingX Golang SDK](https://i.postimg.cc/htbVV4yh/528052139-61babf48-746f-469e-aeed-5058a9337d86.jpg)
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -287,6 +287,11 @@ depth, err := client.Market().GetDepth("BTC-USDT", 20)
 // Get K-lines
 klines, err := client.Market().GetKlines("BTC-USDT", "1h", 100, nil, nil)
 
+// Get spot K-lines with timezone (v2 endpoint)
+// timeZone: 0=UTC (default), 8=UTC+8
+timeZone := int64(8) // UTC+8
+spotKlines, err := client.Market().GetSpotKlines("BTC-USDT", "1h", 100, nil, nil, &timeZone)
+
 // Get 24hr ticker
 ticker, err := client.Market().Get24hrTicker(nil) // nil for all symbols
 
@@ -369,6 +374,34 @@ withdrawal, err := client.Wallet().Withdraw("USDT", "TXxx...xxx", 100.0, "TRC20"
 coins, err := client.Wallet().GetAllCoinInfo()
 ```
 
+### Spot Account Service - Spot Account
+
+```go
+import "github.com/tigusigalpa/bingx-go/services"
+
+// Get spot balance
+balance, err := client.SpotAccount().GetBalance()
+
+// Internal transfer with wallet type constants
+// Wallet types: WalletTypeFund=1, WalletTypeStandardFutures=2, 
+//               WalletTypePerpetualFutures=3, WalletTypeSpot=4
+userAccountType := 1 // 1=UID, 2=Phone, 3=Email
+userAccount := "123456"
+transfer, err := client.SpotAccount().InternalTransfer(
+    "USDT",                           // coin
+    services.WalletTypeSpot,          // walletType (4 = Spot Account)
+    100.0,                            // amount
+    userAccountType,                  // userAccountType
+    userAccount,                      // userAccount
+    nil,                              // callingCode (required when userAccountType=2)
+    nil,                              // transferClientID
+    nil,                              // recvWindow
+)
+
+// Get all account balances
+allBalances, err := client.SpotAccount().GetAllAccountBalances()
+```
+
 ### Coin-M Perpetual Futures
 
 ```go
@@ -397,6 +430,8 @@ balance, err := client.CoinM().Trade().GetBalance()
 ### Sub-Account Management
 
 ```go
+import "github.com/tigusigalpa/bingx-go/services"
+
 // Create sub-account
 result, err := client.SubAccount().CreateSubAccount("sub_account_001")
 
@@ -411,15 +446,60 @@ apiKey, err := client.SubAccount().CreateSubAccountAPIKey(
     nil, // IP whitelist (optional)
 )
 
-// Transfer assets to sub-account
+// Sub-account internal transfer with wallet type constants
+// Wallet types: SubAccountWalletTypeFund=1, SubAccountWalletTypeStandardFutures=2,
+//               SubAccountWalletTypePerpetualFutures=3, SubAccountWalletTypeSpot=15
+userAccountType := 1 // 1=UID, 2=Phone, 3=Email
+userAccount := "12345678"
 transfer, err := client.SubAccount().SubAccountInternalTransfer(
-    "USDT",
-    "SPOT",
-    100.0,
-    "FROM_MAIN_TO_SUB",
-    nil,
-    &subUID,
-    nil,
+    "USDT",                                  // coin
+    services.SubAccountWalletTypeSpot,       // walletType (15 = Spot Account)
+    100.0,                                   // amount
+    userAccountType,                         // userAccountType
+    userAccount,                             // userAccount
+    nil,                                     // callingCode
+    nil,                                     // transferClientID
+    nil,                                     // recvWindow
+)
+
+// Sub-Mother Account Asset Transfer (master account only)
+fromUID := int64(123456)
+toUID := int64(789012)
+transfer, err = client.SubAccount().SubMotherAccountAssetTransfer(
+    "USDT",                                  // assetName
+    100.0,                                   // transferAmount
+    fromUID,                                 // fromUID
+    1,                                       // fromType (1=Parent, 2=Sub)
+    1,                                       // fromAccountType (1=Funding, 2=Standard futures, 3=Perpetual, 15=Spot)
+    toUID,                                   // toUID
+    2,                                       // toType (1=Parent, 2=Sub)
+    15,                                      // toAccountType (15=Spot)
+    "Transfer to sub-account",               // remark
+    nil,                                     // recvWindow
+)
+
+// Query transferable amount (master account only)
+transferable, err := client.SubAccount().GetSubMotherAccountTransferableAmount(
+    fromUID,                                 // fromUID
+    1,                                       // fromAccountType
+    toUID,                                   // toUID
+    15,                                      // toAccountType (Spot)
+    nil,                                     // recvWindow
+)
+
+// Query transfer history (master account only)
+var pageID, pagingSize int
+pageID = 1
+pagingSize = 50
+history, err := client.SubAccount().GetSubMotherAccountTransferHistory(
+    fromUID,                                 // uid
+    nil,                                     // transferType (optional)
+    nil,                                     // tranID (optional)
+    nil,                                     // startTime (optional)
+    nil,                                     // endTime (optional)
+    &pageID,                                 // pageID
+    &pagingSize,                             // pagingSize
+    nil,                                     // recvWindow
 )
 
 // Get sub-account assets

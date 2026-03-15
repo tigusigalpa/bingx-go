@@ -2,6 +2,14 @@ package services
 
 import "github.com/tigusigalpa/bingx-go/http"
 
+// Sub-account wallet type constants
+const (
+	SubAccountWalletTypeFund             = 1  // Fund Account
+	SubAccountWalletTypeStandardFutures  = 2  // Standard Futures Account
+	SubAccountWalletTypePerpetualFutures = 3  // Perpetual Futures Account
+	SubAccountWalletTypeSpot             = 15 // Spot Account
+)
+
 type SubAccountService struct {
 	client *http.BaseHTTPClient
 }
@@ -98,25 +106,29 @@ func (s *SubAccountService) AuthorizeSubAccountInternalTransfer(subAccountString
 	})
 }
 
-func (s *SubAccountService) SubAccountInternalTransfer(coin, walletType string, amount float64, transferType string, fromSubUID, toSubUID, clientID *string) (map[string]interface{}, error) {
+// SubAccountInternalTransfer performs sub-account internal transfer
+// walletType: 1=Fund, 2=Standard Futures, 3=Perpetual Futures, 15=Spot
+// userAccountType: 1=UID, 2=Phone number, 3=Email
+func (s *SubAccountService) SubAccountInternalTransfer(coin string, walletType int, amount float64, userAccountType int, userAccount string, callingCode, transferClientID *string, recvWindow *int64) (map[string]interface{}, error) {
 	params := map[string]interface{}{
-		"coin":         coin,
-		"walletType":   walletType,
-		"amount":       amount,
-		"transferType": transferType,
+		"coin":            coin,
+		"walletType":      walletType,
+		"amount":          amount,
+		"userAccountType": userAccountType,
+		"userAccount":     userAccount,
 	}
 
-	if fromSubUID != nil {
-		params["fromSubUid"] = *fromSubUID
+	if callingCode != nil {
+		params["callingCode"] = *callingCode
 	}
-	if toSubUID != nil {
-		params["toSubUid"] = *toSubUID
+	if transferClientID != nil {
+		params["transferClientId"] = *transferClientID
 	}
-	if clientID != nil {
-		params["clientId"] = *clientID
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
 	}
 
-	return s.client.Request("POST", "/openApi/subAccount/v1/innerTransfer/apply", params)
+	return s.client.Request("POST", "/openApi/wallets/v1/capital/subAccountInnerTransfer/apply", params)
 }
 
 func (s *SubAccountService) GetSubAccountInternalTransferRecords(startTime, endTime *int64, current, size int) (map[string]interface{}, error) {
@@ -206,4 +218,76 @@ func (s *SubAccountService) GetSubAccountDepositHistory(subUID, coin string, sta
 	}
 
 	return s.client.Request("GET", "/openApi/subAccount/v1/capital/deposit/history", params)
+}
+
+// SubMotherAccountAssetTransfer performs asset transfer between parent and sub-accounts
+// Note: This endpoint is only available to the master account
+// fromAccountType/toAccountType: 1=Funding, 2=Standard futures, 3=Perpetual U-based, 15=Spot
+func (s *SubAccountService) SubMotherAccountAssetTransfer(assetName string, transferAmount float64, fromUID int64, fromType int, fromAccountType int, toUID int64, toType int, toAccountType int, remark string, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"assetName":       assetName,
+		"transferAmount":  transferAmount,
+		"fromUid":         fromUID,
+		"fromType":        fromType,
+		"fromAccountType": fromAccountType,
+		"toUid":           toUID,
+		"toType":          toType,
+		"toAccountType":   toAccountType,
+		"remark":          remark,
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("POST", "/openApi/account/transfer/v1/subAccount/transferAsset", params)
+}
+
+// GetSubMotherAccountTransferableAmount queries supported coins and available transferable amounts
+// Note: This endpoint is only available to the master account
+func (s *SubAccountService) GetSubMotherAccountTransferableAmount(fromUID int64, fromAccountType int, toUID int64, toAccountType int, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"fromUid":         fromUID,
+		"fromAccountType": fromAccountType,
+		"toUid":           toUID,
+		"toAccountType":   toAccountType,
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("POST", "/openApi/account/transfer/v1/subAccount/transferAsset/supportCoins", params)
+}
+
+// GetSubMotherAccountTransferHistory queries transfer history between sub-accounts and parent account
+// Note: This endpoint is only available to the master account
+func (s *SubAccountService) GetSubMotherAccountTransferHistory(uid int64, transferType, tranID *string, startTime, endTime *int64, pageID, pagingSize *int, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"uid": uid,
+	}
+
+	if transferType != nil {
+		params["type"] = *transferType
+	}
+	if tranID != nil {
+		params["tranId"] = *tranID
+	}
+	if startTime != nil {
+		params["startTime"] = *startTime
+	}
+	if endTime != nil {
+		params["endTime"] = *endTime
+	}
+	if pageID != nil {
+		params["pageId"] = *pageID
+	}
+	if pagingSize != nil {
+		params["pagingSize"] = *pagingSize
+	}
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/account/transfer/v1/subAccount/asset/transferHistory", params)
 }

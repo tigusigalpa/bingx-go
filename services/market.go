@@ -14,8 +14,11 @@ func (s *MarketService) GetFuturesSymbols() (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/swap/v2/market/symbols", nil)
 }
 
+// GetSpotSymbols retrieves spot trading symbols
+// Response includes maxMarketNotional (max notional for market orders)
+// and status field (0=Offline, 1=Online, 5=Pre-open, 10=Accessed, 25=Suspended, 29=Pre-Delisted, 30=Delisted)
 func (s *MarketService) GetSpotSymbols() (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/spot/v1/market/symbols", nil)
+	return s.client.Request("GET", "/openApi/spot/v1/common/symbols", nil)
 }
 
 func (s *MarketService) GetAllSymbols() (map[string]interface{}, error) {
@@ -82,7 +85,9 @@ func (s *MarketService) GetKlines(symbol, interval string, limit int, startTime,
 	return s.client.Request("GET", "/openApi/swap/v2/market/kline", params)
 }
 
-func (s *MarketService) GetSpotKlines(symbol, interval string, limit int, startTime, endTime *int64) (map[string]interface{}, error) {
+// GetSpotKlines retrieves spot K-line (candlestick) data
+// timeZone: optional timezone offset (0=UTC (default), 8=UTC+8)
+func (s *MarketService) GetSpotKlines(symbol, interval string, limit int, startTime, endTime, timeZone *int64) (map[string]interface{}, error) {
 	params := map[string]interface{}{
 		"symbol":   symbol,
 		"interval": interval,
@@ -95,8 +100,11 @@ func (s *MarketService) GetSpotKlines(symbol, interval string, limit int, startT
 	if endTime != nil {
 		params["endTime"] = *endTime
 	}
+	if timeZone != nil {
+		params["timeZone"] = *timeZone
+	}
 
-	return s.client.Request("GET", "/openApi/spot/v1/market/klines", params)
+	return s.client.Request("GET", "/openApi/spot/v2/market/kline", params)
 }
 
 func (s *MarketService) Get24hrTicker(symbol *string) (map[string]interface{}, error) {
