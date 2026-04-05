@@ -305,3 +305,65 @@ func (s *MarketService) GetBasis(symbol, contractType string, limit int, startTi
 
 	return s.client.Request("GET", "/openApi/swap/v2/market/basis", params)
 }
+
+func (s *MarketService) GetOpenInterest(symbol string) (map[string]interface{}, error) {
+	return s.client.Request("GET", "/openApi/swap/v2/market/openInterest", map[string]interface{}{
+		"symbol": symbol,
+	})
+}
+
+func (s *MarketService) GetOpenInterestHistory(symbol, period string, limit int, startTime, endTime *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"symbol": symbol,
+		"period": period,
+		"limit":  limit,
+	}
+
+	if startTime != nil {
+		params["startTime"] = *startTime
+	}
+	if endTime != nil {
+		params["endTime"] = *endTime
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/market/openInterest/history", params)
+}
+
+func (s *MarketService) GetFundingRateInfo(symbol string) (map[string]interface{}, error) {
+	return s.client.Request("GET", "/openApi/swap/v2/market/fundingRate", map[string]interface{}{
+		"symbol": symbol,
+	})
+}
+
+func (s *MarketService) GetBookTicker(symbol *string) (map[string]interface{}, error) {
+	params := map[string]interface{}{}
+	if symbol != nil {
+		params["symbol"] = *symbol
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/market/bookTicker", params)
+}
+
+func (s *MarketService) GetSpotBookTicker(symbol *string) (map[string]interface{}, error) {
+	params := map[string]interface{}{}
+	if symbol != nil {
+		params["symbol"] = *symbol
+	}
+
+	return s.client.Request("GET", "/openApi/spot/v1/market/bookTicker", params)
+}
+
+func (s *MarketService) GetIndexPrice(symbol string) (map[string]interface{}, error) {
+	return s.client.Request("GET", "/openApi/swap/v2/market/indexPrice", map[string]interface{}{
+		"symbol": symbol,
+	})
+}
+
+func (s *MarketService) GetTickerPrice(symbol *string) (map[string]interface{}, error) {
+	params := map[string]interface{}{}
+	if symbol != nil {
+		params["symbol"] = *symbol
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/market/ticker/price", params)
+}

@@ -115,11 +115,13 @@ func (c *BaseHTTPClient) handleAPIError(response map[string]interface{}) error {
 	}
 
 	switch codeStr {
-	case "100001", "100002", "100003", "100004":
+	case "0":
+		return nil
+	case "100001", "100002", "100003", "100004", "100412":
 		return errors.NewAuthenticationException(message, response)
-	case "100005":
+	case "100005", "100429":
 		return errors.NewRateLimitException(message, response)
-	case "200001":
+	case "200001", "200002":
 		return errors.NewInsufficientBalanceException(message, response)
 	default:
 		return errors.NewAPIException(message, codeStr, response)

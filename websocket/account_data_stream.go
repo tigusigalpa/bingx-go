@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// AccountDataStreamBaseURL is the WebSocket endpoint for account data streams (v3 compatible)
 const AccountDataStreamBaseURL = "wss://open-api-swap.bingx.com/swap-market"
 
 type AccountDataStream struct {

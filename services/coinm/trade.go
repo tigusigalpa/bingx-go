@@ -15,7 +15,7 @@ func NewTradeService(client *http.BaseHTTPClient) *TradeService {
 }
 
 func (s *TradeService) CreateOrder(params map[string]interface{}) (map[string]interface{}, error) {
-	return s.client.Request("POST", "/openApi/swap/v1/trade/order", params)
+	return s.client.Request("POST", "/openApi/swap/v2/trade/order", params)
 }
 
 func (s *TradeService) CancelOrder(symbol string, orderID *string, clientOrderID *string) (map[string]interface{}, error) {
@@ -136,4 +136,46 @@ func (s *TradeService) GetUserTrades(symbol string, limit int, startTime, endTim
 	}
 
 	return s.client.Request("GET", "/openApi/swap/v1/trade/userTrades", params)
+}
+
+func (s *TradeService) GetPositionRisk(symbol *string, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if symbol != nil {
+		params["symbol"] = *symbol
+	}
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v1/user/positionRisk", params)
+}
+
+func (s *TradeService) GetIncomeHistory(symbol *string, incomeType *string, startTime, endTime *int64, limit int, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if symbol != nil {
+		params["symbol"] = *symbol
+	}
+	if incomeType != nil {
+		params["incomeType"] = *incomeType
+	}
+	if startTime != nil {
+		params["startTime"] = *startTime
+	}
+	if endTime != nil {
+		params["endTime"] = *endTime
+	}
+	if limit > 0 {
+		params["limit"] = limit
+	}
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v1/user/income", params)
 }

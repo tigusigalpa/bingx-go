@@ -2,6 +2,98 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-04-05
+
+### 🎉 BingX API v3 Support
+
+This major release brings full compatibility with BingX API v3, adding 20+ new methods and enhanced functionality across all services.
+
+### Added
+
+#### Trade Service - New Order Types & Methods
+- **Order Type Constants**: Added support for new order types
+  - `OrderTypeTriggerLimit` - TRIGGER_LIMIT orders
+  - `OrderTypeTrailingStopMarket` - TRAILING_STOP_MARKET orders
+  - `OrderTypeTrailingTPSL` - TRAILING_TP_SL orders
+  
+- **One-Click Reverse Position**: `OneClickReversePosition(symbol, recvWindow)` - Instantly reverse position direction
+- **Auto Margin Addition**: `SetAutoAddMargin(symbol, positionSide, autoAddMargin, recvWindow)` - Hedge mode automatic margin addition
+- **Multi-Assets Mode**: 
+  - `SwitchMultiAssetsMode(multiAssetsMargin, recvWindow)` - Enable/disable multi-assets margin mode
+  - `GetMultiAssetsMode(recvWindow)` - Query current multi-assets mode status
+  - `GetMultiAssetsRules(recvWindow)` - Get multi-assets trading rules
+  - `GetMultiAssetsMargin(recvWindow)` - Query multi-assets margin details
+  
+- **TWAP Orders** (Time-Weighted Average Price):
+  - `PlaceTWAPOrder(params)` - Create TWAP order for large position building
+  - `CancelTWAPOrder(orderId, recvWindow)` - Cancel active TWAP order
+  - `GetTWAPOrder(orderId, recvWindow)` - Query specific TWAP order
+  - `GetTWAPOrders(symbol, status, startTime, endTime, limit, recvWindow)` - List TWAP orders with filters
+
+#### Market Service - Enhanced Market Data
+- `GetOpenInterest(symbol)` - Get current open interest for symbol
+- `GetOpenInterestHistory(symbol, period, limit, startTime, endTime)` - Historical open interest data
+- `GetFundingRateInfo(symbol)` - Current funding rate information
+- `GetBookTicker(symbol)` - Best bid/ask prices (futures)
+- `GetSpotBookTicker(symbol)` - Best bid/ask prices (spot)
+- `GetIndexPrice(symbol)` - Current index price
+- `GetTickerPrice(symbol)` - Latest ticker price data
+
+#### Account Service - Advanced Account Management
+- `GetPositionRisk(symbol, recvWindow)` - Detailed position risk metrics
+- `GetIncomeHistory(symbol, incomeType, startTime, endTime, limit, recvWindow)` - Income/PnL history with filtering
+- `GetCommissionHistory(symbol, startTime, endTime, limit, recvWindow)` - Trading commission history
+- `GetForceOrders(symbol, autoCloseType, startTime, endTime, limit, recvWindow)` - Liquidation/force close orders
+- `GetPositionMode(recvWindow)` - Query hedge/one-way position mode
+- `SetPositionMode(dualSidePosition, recvWindow)` - Switch between hedge and one-way mode
+
+#### Coin-M Futures Service
+- `GetPositionRisk(symbol, recvWindow)` - Position risk for Coin-M contracts
+- `GetIncomeHistory(...)` - Income history for Coin-M
+- `GetFundingRateHistory(symbol, limit)` - Historical funding rates
+- `GetMarkPrice(symbol)` - Mark price for Coin-M
+- `GetIndexPrice(symbol)` - Index price for Coin-M
+- `GetRecentTrades(symbol, limit)` - Recent trades data
+
+### Changed
+
+#### HTTP Client
+- Enhanced error handling with additional v3 error codes:
+  - Added `100412` for authentication errors
+  - Added `100429` for rate limit errors
+  - Added `200002` for insufficient balance scenarios
+  - Added explicit handling for success code `0`
+
+#### Coin-M Trade Service
+- Updated `CreateOrder` endpoint from v1 to v2: `/openApi/swap/v2/trade/order`
+
+#### WebSocket
+- Confirmed v3 compatibility for WebSocket URLs
+- Added documentation comments for endpoint URLs
+
+### Documentation
+
+- Updated README.md with v3 API reference
+- Increased method counts: 240+ total API methods
+- Updated order types documentation
+- Changed API documentation link to v3: https://bingx-api.github.io/docs-v3/
+- Enhanced service descriptions with new capabilities
+
+### API Compatibility
+
+**Breaking Changes**: None - All changes are backward compatible additions
+
+**New Capabilities**:
+- TWAP order execution for institutional-grade trading
+- Multi-assets margin mode for portfolio margin
+- One-click position reversal for quick strategy changes
+- Enhanced risk management with position risk metrics
+- Comprehensive income and commission tracking
+
+**Tested Against**: BingX API v3 (April 2026)
+
+---
+
 ## [Unreleased] - 2026-03-15
 
 ### Added

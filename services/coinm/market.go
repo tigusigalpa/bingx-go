@@ -55,3 +55,29 @@ func (s *MarketService) GetFundingRate(symbol string) (map[string]interface{}, e
 		"symbol": symbol,
 	})
 }
+
+func (s *MarketService) GetFundingRateHistory(symbol string, limit int) (map[string]interface{}, error) {
+	return s.client.Request("GET", "/openApi/swap/v1/market/fundingRate/history", map[string]interface{}{
+		"symbol": symbol,
+		"limit":  limit,
+	})
+}
+
+func (s *MarketService) GetMarkPrice(symbol string) (map[string]interface{}, error) {
+	return s.client.Request("GET", "/openApi/swap/v1/market/markPrice", map[string]interface{}{
+		"symbol": symbol,
+	})
+}
+
+func (s *MarketService) GetIndexPrice(symbol string) (map[string]interface{}, error) {
+	return s.client.Request("GET", "/openApi/swap/v1/market/indexPrice", map[string]interface{}{
+		"symbol": symbol,
+	})
+}
+
+func (s *MarketService) GetRecentTrades(symbol string, limit int) (map[string]interface{}, error) {
+	return s.client.Request("GET", "/openApi/swap/v1/market/trades", map[string]interface{}{
+		"symbol": symbol,
+		"limit":  limit,
+	})
+}

@@ -12,20 +12,34 @@
 
 </div>
 
-Go client for the [BingX](https://bingx.com) cryptocurrency exchange API. Covers USDT-M and Coin-M perpetual futures,
-spot trading, copy trading, sub-accounts, and WebSocket streaming. 220+ API methods.
+Go client for the [BingX](https://bingx.com) cryptocurrency exchange API v3. Covers USDT-M and Coin-M perpetual futures,
+spot trading, copy trading, sub-accounts, and WebSocket streaming. 240+ API methods with full v3 support.
 
 **Package:** [pkg.go.dev/github.com/tigusigalpa/bingx-go](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
 
 > 📖 **[Full documentation available on Wiki](https://github.com/tigusigalpa/bingx-go/wiki)**
 
+### 🚀 Quick Links
+
+- **[API v3 Migration Guide](API_V3_MIGRATION.md)** - Complete guide for upgrading to v3
+- **[v3 Update Summary](V3_UPDATE_SUMMARY.md)** - Technical details of all v3 changes
+- **[Changelog](CHANGELOG.md)** - Version history and release notes
+- **[Examples](examples/)** - Working code examples
+
 ## Table of Contents
 
 - [Features](#features)
+- [What's New in v3](#whats-new-in-v3) ⭐
 - [Architecture](#architecture)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Usage Examples](#usage-examples)
+  - [Market Data](#market-service---market-data)
+  - [Account Management](#account-service---account-management)
+  - [Trading Operations](#trade-service---trading-operations)
+  - [Advanced Trading (v3)](#advanced-trading-features-v3) ⭐
+  - [Coin-M Futures](#coin-m-perpetual-futures)
+  - [WebSocket Streaming](#websocket-streaming)
     - [Market Data](#market-service---market-data)
     - [Account Management](#account-service---account-management)
     - [Trading Operations](#trade-service---trading-operations)
@@ -54,7 +68,7 @@ spot trading, copy trading, sub-accounts, and WebSocket streaming. 220+ API meth
 
 #### USDT-M Perpetual Futures
 
-- **Market Service** (40+ methods)
+- **Market Service** (45+ methods)
     - Real-time & historical prices
     - Market depth & order books
     - Candlestick data (K-lines)
@@ -64,7 +78,7 @@ spot trading, copy trading, sub-accounts, and WebSocket streaming. 220+ API meth
     - Long/short ratios
     - Basis data & sentiment analysis
 
-- **Account Service** (20+ methods)
+- **Account Service** (25+ methods)
     - Balance & asset management
     - Position tracking & monitoring
     - Leverage configuration
@@ -73,11 +87,13 @@ spot trading, copy trading, sub-accounts, and WebSocket streaming. 220+ API meth
     - API permissions & rate limits
     - Balance history & deposits
 
-- **Trade Service** (25+ methods)
-    - Order creation & management
+- **Trade Service** (35+ methods)
+    - Order creation & management (incl. TWAP orders)
     - Batch order operations
     - Order modification & cancellation
-    - Position management
+    - Position management & one-click reverse
+    - Multi-assets mode support
+    - Hedge mode auto margin addition
     - Trade history & analytics
     - Test orders (sandbox)
     - Commission calculations
@@ -151,7 +167,7 @@ spot trading, copy trading, sub-accounts, and WebSocket streaming. 220+ API meth
 | Feature              | Description                                                |
 |----------------------|------------------------------------------------------------|
 | **Real-Time Data**   | WebSocket support for live market data and account updates |
-| **Order Types**      | MARKET, LIMIT, STOP, STOP_MARKET, TAKE_PROFIT, and more    |
+| **Order Types**      | MARKET, LIMIT, STOP, STOP_MARKET, TAKE_PROFIT, TRIGGER_LIMIT, TRAILING_STOP_MARKET, TRAILING_TP_SL |
 | **Position Modes**   | One-way and Hedge mode support                             |
 | **Margin Types**     | ISOLATED and CROSSED margin modes                          |
 | **Time in Force**    | GTC, IOC, FOK order execution options                      |
@@ -297,6 +313,27 @@ ticker, err := client.Market().Get24hrTicker(nil) // nil for all symbols
 
 // Get funding rate history
 fundingRate, err := client.Market().GetFundingRateHistory("BTC-USDT", 100)
+
+// Enhanced Market Data (v3)
+
+// Open Interest
+oi, err := client.Market().GetOpenInterest("BTC-USDT")
+
+// Open Interest History
+oiHistory, err := client.Market().GetOpenInterestHistory("BTC-USDT", "5m", 100, nil, nil)
+
+// Funding Rate Info
+fundingInfo, err := client.Market().GetFundingRateInfo("BTC-USDT")
+
+// Book Ticker (Best Bid/Ask)
+bookTicker, err := client.Market().GetBookTicker(&symbol)
+spotBookTicker, err := client.Market().GetSpotBookTicker(&symbol)
+
+// Index Price
+indexPrice, err := client.Market().GetIndexPrice("BTC-USDT")
+
+// Ticker Price
+tickerPrice, err := client.Market().GetTickerPrice(&symbol)
 ```
 
 ### Account Service - Account Management
@@ -321,18 +358,53 @@ err = client.Account().SetLeverage("BTC-USDT", "BOTH", 20, nil)
 // Get/Set margin mode
 marginMode, err := client.Account().GetMarginMode("BTC-USDT")
 err = client.Account().SetMarginMode("BTC-USDT", "ISOLATED")
+
+// Advanced Account Features (v3)
+
+// Position Risk Metrics
+risk, err := client.Account().GetPositionRisk(&symbol, nil)
+// Returns: liquidation price, leverage, margin ratio, unrealized PnL, etc.
+
+// Income/PnL History
+incomeType := "REALIZED_PNL" // REALIZED_PNL, FUNDING_FEE, COMMISSION, etc.
+income, err := client.Account().GetIncomeHistory(&symbol, &incomeType, nil, nil, 100, nil)
+
+// Commission History
+commissions, err := client.Account().GetCommissionHistory("BTC-USDT", nil, nil, 100, nil)
+
+// Liquidation/Force Orders
+forceOrders, err := client.Account().GetForceOrders(&symbol, nil, nil, nil, 100, nil)
+
+// Position Mode (Hedge vs One-Way)
+mode, err := client.Account().GetPositionMode(nil)
+err = client.Account().SetPositionMode(true, nil) // true = hedge mode, false = one-way
 ```
 
 ### Trade Service - Trading Operations
 
 ```go
-// Create order
+import "github.com/tigusigalpa/bingx-go/services"
+
+// Create order with new v3 order types
 order, err := client.Trade().CreateOrder(map[string]interface{}{
     "symbol":       "BTC-USDT",
     "side":         "BUY",
-    "type":         "MARKET",
+    "type":         services.OrderTypeTriggerLimit, // New v3 order type
     "positionSide": "LONG",
+    "price":        50000.0,
+    "stopPrice":    49500.0,
     "quantity":     0.001,
+})
+
+// Trailing stop market order (v3)
+order, err = client.Trade().CreateOrder(map[string]interface{}{
+    "symbol":           "ETH-USDT",
+    "side":             "SELL",
+    "type":             services.OrderTypeTrailingStopMarket,
+    "positionSide":     "SHORT",
+    "activationPrice":  3000.0,
+    "callbackRate":     1.0, // 1% callback
+    "quantity":         0.1,
 })
 
 // Cancel order
@@ -353,6 +425,44 @@ history, err := client.Trade().GetOrderHistory(&symbol, 100, nil, nil)
 
 // Get user trades
 trades, err := client.Trade().GetUserTrades(&symbol, 100, nil, nil)
+```
+
+### Advanced Trading Features (v3)
+
+```go
+import "github.com/tigusigalpa/bingx-go/services"
+
+// TWAP Orders - Execute large orders with minimal market impact
+twapOrder, err := client.Trade().PlaceTWAPOrder(map[string]interface{}{
+    "symbol":       "BTC-USDT",
+    "side":         "BUY",
+    "positionSide": "LONG",
+    "quantity":     10.0,
+    "duration":     3600, // Execute over 1 hour
+    "interval":     60,   // Split into 1-minute intervals
+})
+
+// Query TWAP order
+twap, err := client.Trade().GetTWAPOrder("twap_order_id", nil)
+
+// List TWAP orders
+status := "WORKING"
+twapOrders, err := client.Trade().GetTWAPOrders(&symbol, &status, nil, nil, 100, nil)
+
+// Cancel TWAP order
+err = client.Trade().CancelTWAPOrder("twap_order_id", nil)
+
+// One-Click Position Reversal - Instantly reverse LONG↔SHORT
+result, err := client.Trade().OneClickReversePosition("BTC-USDT", nil)
+
+// Multi-Assets Mode - Portfolio margin across multiple positions
+err = client.Trade().SwitchMultiAssetsMode(true, nil)
+mode, err := client.Trade().GetMultiAssetsMode(nil)
+rules, err := client.Trade().GetMultiAssetsRules(nil)
+margin, err := client.Trade().GetMultiAssetsMargin(nil)
+
+// Auto Add Margin (Hedge Mode)
+err = client.Trade().SetAutoAddMargin("BTC-USDT", "LONG", true, nil)
 ```
 
 ### Wallet Service - Wallet Management
@@ -411,7 +521,7 @@ ticker, err := client.CoinM().Market().GetTicker("BTC-USD")
 // Get Coin-M contracts
 contracts, err := client.CoinM().Market().GetContracts()
 
-// Create Coin-M order
+// Create Coin-M order (v2 endpoint)
 order, err := client.CoinM().Trade().CreateOrder(map[string]interface{}{
     "symbol":       "BTC-USD",
     "side":         "BUY",
@@ -425,6 +535,27 @@ positions, err := client.CoinM().Trade().GetPositions(nil)
 
 // Get Coin-M balance
 balance, err := client.CoinM().Trade().GetBalance()
+
+// Enhanced Coin-M Features (v3)
+
+// Position Risk
+risk, err := client.CoinM().Trade().GetPositionRisk(&symbol, nil)
+
+// Income History
+incomeType := "REALIZED_PNL"
+income, err := client.CoinM().Trade().GetIncomeHistory(&symbol, &incomeType, nil, nil, 100, nil)
+
+// Funding Rate History
+fundingHistory, err := client.CoinM().Market().GetFundingRateHistory("BTC-USD", 100)
+
+// Mark Price
+markPrice, err := client.CoinM().Market().GetMarkPrice("BTC-USD")
+
+// Index Price
+indexPrice, err := client.CoinM().Market().GetIndexPrice("BTC-USD")
+
+// Recent Trades
+trades, err := client.CoinM().Market().GetRecentTrades("BTC-USD", 100)
 ```
 
 ### Sub-Account Management
@@ -671,6 +802,114 @@ klines, err := client.Market().GetKlines(
     &endTime,
 )
 ```
+
+---
+
+## What's New in v3
+
+### 🎯 Key Highlights
+
+**BingX API v3** brings powerful new features for institutional-grade trading:
+
+#### 1. TWAP Orders (Time-Weighted Average Price)
+Execute large orders with minimal market impact by splitting them into smaller chunks over time.
+
+```go
+// Execute 10 BTC over 1 hour in 1-minute intervals
+client.Trade().PlaceTWAPOrder(map[string]interface{}{
+    "symbol":   "BTC-USDT",
+    "quantity": 10.0,
+    "duration": 3600,
+    "interval": 60,
+})
+```
+
+#### 2. Multi-Assets Margin Mode
+Optimize margin usage across multiple positions with portfolio margin.
+
+```go
+// Enable multi-assets mode
+client.Trade().SwitchMultiAssetsMode(true, nil)
+
+// Query margin rules and usage
+rules, _ := client.Trade().GetMultiAssetsRules(nil)
+margin, _ := client.Trade().GetMultiAssetsMargin(nil)
+```
+
+#### 3. One-Click Position Reversal
+Instantly reverse your position from LONG to SHORT or vice versa.
+
+```go
+// Reverse position with one call
+client.Trade().OneClickReversePosition("BTC-USDT", nil)
+// Before: LONG 1.0 BTC → After: SHORT 1.0 BTC
+```
+
+#### 4. Advanced Order Types
+- **TRIGGER_LIMIT** - Trigger orders with limit execution
+- **TRAILING_STOP_MARKET** - Dynamic stop-loss that follows price
+- **TRAILING_TP_SL** - Trailing take-profit and stop-loss
+
+```go
+import "github.com/tigusigalpa/bingx-go/services"
+
+client.Trade().CreateOrder(map[string]interface{}{
+    "type":             services.OrderTypeTrailingStopMarket,
+    "activationPrice":  50000.0,
+    "callbackRate":     1.0, // 1% trailing
+})
+```
+
+#### 5. Enhanced Risk Management
+
+**Position Risk Metrics**:
+```go
+risk, _ := client.Account().GetPositionRisk(&symbol, nil)
+// Returns: liquidation price, leverage, margin ratio, unrealized PnL
+```
+
+**Income/PnL Tracking**:
+```go
+incomeType := "REALIZED_PNL"
+income, _ := client.Account().GetIncomeHistory(&symbol, &incomeType, nil, nil, 100, nil)
+```
+
+**Commission Analysis**:
+```go
+commissions, _ := client.Account().GetCommissionHistory("BTC-USDT", nil, nil, 100, nil)
+```
+
+#### 6. Enhanced Market Data
+- Open Interest & History
+- Funding Rate Information
+- Book Ticker (Best Bid/Ask)
+- Index Price
+- Mark Price
+
+```go
+// Real-time open interest
+oi, _ := client.Market().GetOpenInterest("BTC-USDT")
+
+// Historical open interest
+oiHistory, _ := client.Market().GetOpenInterestHistory("BTC-USDT", "5m", 100, nil, nil)
+
+// Best bid/ask prices
+bookTicker, _ := client.Market().GetBookTicker(&symbol)
+```
+
+### 📊 v3 Statistics
+
+- **26 new methods** across all services
+- **240+ total API methods** (up from 220+)
+- **3 new order types** for advanced strategies
+- **100% backward compatible** - no breaking changes
+- **Full Coin-M v2 support** with enhanced features
+
+### 🔄 Migration from Previous Versions
+
+No code changes required! All existing code continues to work. New features are opt-in.
+
+For detailed migration guide, see [API_V3_MIGRATION.md](API_V3_MIGRATION.md)
 
 ---
 
@@ -1314,5 +1553,5 @@ environment before production use. The authors are not responsible for any finan
 
 - [GitHub Repository](https://github.com/tigusigalpa/bingx-go)
 - [Issues](https://github.com/tigusigalpa/bingx-go/issues)
-- [BingX API Documentation](https://bingx-api.github.io/docs/)
+- [BingX API Documentation v3](https://bingx-api.github.io/docs-v3/)
 - [GoDoc](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)

@@ -7,6 +7,18 @@ import (
 	"github.com/tigusigalpa/bingx-go/http"
 )
 
+const (
+	OrderTypeMarket             = "MARKET"
+	OrderTypeLimit              = "LIMIT"
+	OrderTypeStop               = "STOP"
+	OrderTypeStopMarket         = "STOP_MARKET"
+	OrderTypeTakeProfit         = "TAKE_PROFIT"
+	OrderTypeTakeProfitMarket   = "TAKE_PROFIT_MARKET"
+	OrderTypeTriggerLimit       = "TRIGGER_LIMIT"
+	OrderTypeTrailingStopMarket = "TRAILING_STOP_MARKET"
+	OrderTypeTrailingTPSL       = "TRAILING_TP_SL"
+)
+
 type TradeService struct {
 	client *http.BaseHTTPClient
 }
@@ -18,14 +30,14 @@ func NewTradeService(client *http.BaseHTTPClient) *TradeService {
 }
 
 type CommissionResult struct {
-	Margin              float64 `json:"margin"`
-	Leverage            int     `json:"leverage"`
-	PositionValue       float64 `json:"position_value"`
-	CommissionRate      float64 `json:"commission_rate"`
+	Margin                float64 `json:"margin"`
+	Leverage              int     `json:"leverage"`
+	PositionValue         float64 `json:"position_value"`
+	CommissionRate        float64 `json:"commission_rate"`
 	CommissionRatePercent float64 `json:"commission_rate_percent"`
-	Commission          float64 `json:"commission"`
-	CommissionRounded   float64 `json:"commission_rounded"`
-	NetPositionValue    float64 `json:"net_position_value"`
+	Commission            float64 `json:"commission"`
+	CommissionRounded     float64 `json:"commission_rounded"`
+	NetPositionValue      float64 `json:"net_position_value"`
 }
 
 func (s *TradeService) CalculateFuturesCommission(margin float64, leverage int, commissionRate *float64) CommissionResult {
@@ -38,14 +50,14 @@ func (s *TradeService) CalculateFuturesCommission(margin float64, leverage int, 
 	commission := positionValue * rate
 
 	return CommissionResult{
-		Margin:              margin,
-		Leverage:            leverage,
-		PositionValue:       positionValue,
-		CommissionRate:      rate,
+		Margin:                margin,
+		Leverage:              leverage,
+		PositionValue:         positionValue,
+		CommissionRate:        rate,
 		CommissionRatePercent: rate * 100,
-		Commission:          commission,
-		CommissionRounded:   float64(int(commission*1000000)) / 1000000,
-		NetPositionValue:    positionValue - commission,
+		Commission:            commission,
+		CommissionRounded:     float64(int(commission*1000000)) / 1000000,
+		NetPositionValue:      positionValue - commission,
 	}
 }
 
@@ -386,4 +398,146 @@ func (s *TradeService) ChangeLeverage(symbol, side string, leverage int, recvWin
 	}
 
 	return s.client.Request("POST", "/openApi/swap/v2/trade/leverage", params)
+}
+
+func (s *TradeService) OneClickReversePosition(symbol string, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"symbol":    symbol,
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("POST", "/openApi/swap/v2/trade/oneClickReversePosition", params)
+}
+
+func (s *TradeService) SetAutoAddMargin(symbol, positionSide string, autoAddMargin bool, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"symbol":        symbol,
+		"positionSide":  positionSide,
+		"autoAddMargin": autoAddMargin,
+		"timestamp":     time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("POST", "/openApi/swap/v2/trade/autoAddMargin", params)
+}
+
+func (s *TradeService) SwitchMultiAssetsMode(multiAssetsMargin bool, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"multiAssetsMargin": multiAssetsMargin,
+		"timestamp":         time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("POST", "/openApi/swap/v2/trade/multiAssetsMode", params)
+}
+
+func (s *TradeService) GetMultiAssetsMode(recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/trade/multiAssetsMode", params)
+}
+
+func (s *TradeService) GetMultiAssetsRules(recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/trade/multiAssetsRules", params)
+}
+
+func (s *TradeService) GetMultiAssetsMargin(recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/trade/multiAssetsMargin", params)
+}
+
+func (s *TradeService) PlaceTWAPOrder(params map[string]interface{}) (map[string]interface{}, error) {
+	if params == nil {
+		params = make(map[string]interface{})
+	}
+
+	if _, exists := params["timestamp"]; !exists {
+		params["timestamp"] = time.Now().UnixMilli()
+	}
+
+	return s.client.Request("POST", "/openApi/swap/v2/trade/twapOrder", params)
+}
+
+func (s *TradeService) CancelTWAPOrder(orderId string, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"orderId":   orderId,
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("DELETE", "/openApi/swap/v2/trade/twapOrder", params)
+}
+
+func (s *TradeService) GetTWAPOrder(orderId string, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"orderId":   orderId,
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/trade/twapOrder", params)
+}
+
+func (s *TradeService) GetTWAPOrders(symbol *string, status *string, startTime, endTime *int64, limit int, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if symbol != nil {
+		params["symbol"] = *symbol
+	}
+	if status != nil {
+		params["status"] = *status
+	}
+	if startTime != nil {
+		params["startTime"] = *startTime
+	}
+	if endTime != nil {
+		params["endTime"] = *endTime
+	}
+	if limit > 0 {
+		params["limit"] = limit
+	}
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/trade/twapOrders", params)
 }

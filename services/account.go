@@ -153,3 +153,119 @@ func (s *AccountService) DustTransfer(assets []string) (map[string]interface{}, 
 		"assets": assets,
 	})
 }
+
+func (s *AccountService) GetPositionRisk(symbol *string, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if symbol != nil {
+		params["symbol"] = *symbol
+	}
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/user/positionRisk", params)
+}
+
+func (s *AccountService) GetIncomeHistory(symbol *string, incomeType *string, startTime, endTime *int64, limit int, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if symbol != nil {
+		params["symbol"] = *symbol
+	}
+	if incomeType != nil {
+		params["incomeType"] = *incomeType
+	}
+	if startTime != nil {
+		params["startTime"] = *startTime
+	}
+	if endTime != nil {
+		params["endTime"] = *endTime
+	}
+	if limit > 0 {
+		params["limit"] = limit
+	}
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/user/income", params)
+}
+
+func (s *AccountService) GetCommissionHistory(symbol string, startTime, endTime *int64, limit int, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"symbol":    symbol,
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if startTime != nil {
+		params["startTime"] = *startTime
+	}
+	if endTime != nil {
+		params["endTime"] = *endTime
+	}
+	if limit > 0 {
+		params["limit"] = limit
+	}
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/user/commissionHistory", params)
+}
+
+func (s *AccountService) GetForceOrders(symbol *string, autoCloseType *string, startTime, endTime *int64, limit int, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if symbol != nil {
+		params["symbol"] = *symbol
+	}
+	if autoCloseType != nil {
+		params["autoCloseType"] = *autoCloseType
+	}
+	if startTime != nil {
+		params["startTime"] = *startTime
+	}
+	if endTime != nil {
+		params["endTime"] = *endTime
+	}
+	if limit > 0 {
+		params["limit"] = limit
+	}
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/user/forceOrders", params)
+}
+
+func (s *AccountService) GetPositionMode(recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("GET", "/openApi/swap/v2/user/positionSide/dual", params)
+}
+
+func (s *AccountService) SetPositionMode(dualSidePosition bool, recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"dualSidePosition": dualSidePosition,
+		"timestamp":        time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("POST", "/openApi/swap/v2/user/positionSide/dual", params)
+}

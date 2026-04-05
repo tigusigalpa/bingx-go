@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// MarketDataStreamURL is the WebSocket endpoint for market data streams (v3 compatible)
 const MarketDataStreamURL = "wss://open-api-swap.bingx.com/swap-market"
 
 type MarketDataStream struct {
