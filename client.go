@@ -1,9 +1,9 @@
 package bingx
 
 import (
-	"github.com/tigusigalpa/bingx-go/http"
-	"github.com/tigusigalpa/bingx-go/services"
-	"github.com/tigusigalpa/bingx-go/websocket"
+	"github.com/tigusigalpa/bingx-go/v2/http"
+	"github.com/tigusigalpa/bingx-go/v2/services"
+	"github.com/tigusigalpa/bingx-go/v2/websocket"
 )
 
 type Client struct {

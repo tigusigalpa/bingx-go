@@ -3,7 +3,7 @@ package coinm
 import (
 	"time"
 
-	"github.com/tigusigalpa/bingx-go/http"
+	"github.com/tigusigalpa/bingx-go/v2/http"
 )
 
 type TradeService struct {

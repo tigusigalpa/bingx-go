@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/tigusigalpa/bingx-go"
+	"github.com/tigusigalpa/bingx-go/v2"
 )
 
 func main() {

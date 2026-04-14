@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tigusigalpa/bingx-go/errors"
+	"github.com/tigusigalpa/bingx-go/v2/errors"
 )
 
 type BaseHTTPClient struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	bingx "github.com/tigusigalpa/bingx-go"
+	bingx "github.com/tigusigalpa/bingx-go/v2"
 )
 
 func main() {

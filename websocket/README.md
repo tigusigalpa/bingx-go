@@ -13,7 +13,7 @@ This package provides WebSocket streaming functionality for BingX API, supportin
 ## Installation
 
 ```bash
-go get github.com/tigusigalpa/bingx-go
+go get github.com/tigusigalpa/bingx-go/v2
 ```
 
 ## Market Data Stream
@@ -27,7 +27,7 @@ import (
     "fmt"
     "log"
     
-    "github.com/tigusigalpa/bingx-go"
+    "github.com/tigusigalpa/bingx-go/v2"
 )
 
 func main() {
@@ -99,7 +99,7 @@ import (
     "log"
     "os"
     
-    "github.com/tigusigalpa/bingx-go"
+    "github.com/tigusigalpa/bingx-go/v2"
 )
 
 func main() {

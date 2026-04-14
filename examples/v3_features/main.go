@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	bingx "github.com/tigusigalpa/bingx-go"
-	"github.com/tigusigalpa/bingx-go/services"
+	bingx "github.com/tigusigalpa/bingx-go/v2"
+	"github.com/tigusigalpa/bingx-go/v2/services"
 )
 
 func main() {

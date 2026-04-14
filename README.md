@@ -6,16 +6,16 @@
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/tigusigalpa/bingx-go?style=flat-square)](https://goreportcard.com/report/github.com/tigusigalpa/bingx-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tigusigalpa/bingx-go/v2?style=flat-square)](https://goreportcard.com/report/github.com/tigusigalpa/bingx-go/v2)
 [![GitHub Release](https://img.shields.io/github/v/release/tigusigalpa/bingx-go?style=flat-square)](https://github.com/tigusigalpa/bingx-go/releases)
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue?style=flat-square&logo=go)](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue?style=flat-square&logo=go)](https://pkg.go.dev/github.com/tigusigalpa/bingx-go/v2)
 
 </div>
 
 Go client for the [BingX](https://bingx.com) cryptocurrency exchange API v3. Covers USDT-M and Coin-M perpetual futures,
 spot trading, copy trading, sub-accounts, and WebSocket streaming. 240+ API methods with full v3 support.
 
-**Package:** [pkg.go.dev/github.com/tigusigalpa/bingx-go](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
+**Package:** [pkg.go.dev/github.com/tigusigalpa/bingx-go/v2](https://pkg.go.dev/github.com/tigusigalpa/bingx-go/v2)
 
 > 📖 **[Full documentation available on Wiki](https://github.com/tigusigalpa/bingx-go/wiki)**
 
@@ -220,7 +220,7 @@ bingx-go/
 - BingX account with API keys (for authenticated endpoints)
 
 ```bash
-go get github.com/tigusigalpa/bingx-go
+go get github.com/tigusigalpa/bingx-go/v2
 ```
 
 Only external dependency: `github.com/gorilla/websocket` (for WebSocket features)
@@ -236,7 +236,7 @@ import (
     "fmt"
     "log"
     
-    bingx "github.com/tigusigalpa/bingx-go"
+    bingx "github.com/tigusigalpa/bingx-go/v2"
 )
 
 func main() {
@@ -383,7 +383,7 @@ err = client.Account().SetPositionMode(true, nil) // true = hedge mode, false = 
 ### Trade Service - Trading Operations
 
 ```go
-import "github.com/tigusigalpa/bingx-go/services"
+import "github.com/tigusigalpa/bingx-go/v2/services"
 
 // Create order with new v3 order types
 order, err := client.Trade().CreateOrder(map[string]interface{}{
@@ -430,7 +430,7 @@ trades, err := client.Trade().GetUserTrades(&symbol, 100, nil, nil)
 ### Advanced Trading Features (v3)
 
 ```go
-import "github.com/tigusigalpa/bingx-go/services"
+import "github.com/tigusigalpa/bingx-go/v2/services"
 
 // TWAP Orders - Execute large orders with minimal market impact
 twapOrder, err := client.Trade().PlaceTWAPOrder(map[string]interface{}{
@@ -487,7 +487,7 @@ coins, err := client.Wallet().GetAllCoinInfo()
 ### Spot Account Service - Spot Account
 
 ```go
-import "github.com/tigusigalpa/bingx-go/services"
+import "github.com/tigusigalpa/bingx-go/v2/services"
 
 // Get spot balance
 balance, err := client.SpotAccount().GetBalance()
@@ -561,7 +561,7 @@ trades, err := client.CoinM().Market().GetRecentTrades("BTC-USD", 100)
 ### Sub-Account Management
 
 ```go
-import "github.com/tigusigalpa/bingx-go/services"
+import "github.com/tigusigalpa/bingx-go/v2/services"
 
 // Create sub-account
 result, err := client.SubAccount().CreateSubAccount("sub_account_001")
@@ -851,7 +851,7 @@ client.Trade().OneClickReversePosition("BTC-USDT", nil)
 - **TRAILING_TP_SL** - Trailing take-profit and stop-loss
 
 ```go
-import "github.com/tigusigalpa/bingx-go/services"
+import "github.com/tigusigalpa/bingx-go/v2/services"
 
 client.Trade().CreateOrder(map[string]interface{}{
     "type":             services.OrderTypeTrailingStopMarket,
@@ -1089,7 +1089,7 @@ if data, ok := response["data"].(map[string]interface{}); ok {
 ## Error Handling
 
 ```go
-import "github.com/tigusigalpa/bingx-go/errors"
+import "github.com/tigusigalpa/bingx-go/v2/errors"
 
 // Handle errors
 order, err := client.Trade().CreateOrder(params)
@@ -1554,4 +1554,4 @@ environment before production use. The authors are not responsible for any finan
 - [GitHub Repository](https://github.com/tigusigalpa/bingx-go)
 - [Issues](https://github.com/tigusigalpa/bingx-go/issues)
 - [BingX API Documentation v3](https://bingx-api.github.io/docs-v3/)
-- [GoDoc](https://pkg.go.dev/github.com/tigusigalpa/bingx-go)
+- [GoDoc](https://pkg.go.dev/github.com/tigusigalpa/bingx-go/v2)

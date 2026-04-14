@@ -1,6 +1,6 @@
 package services
 
-import "github.com/tigusigalpa/bingx-go/http"
+import "github.com/tigusigalpa/bingx-go/v2/http"
 
 type CopyTradingService struct {
 	client *http.BaseHTTPClient

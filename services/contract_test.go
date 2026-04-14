@@ -3,7 +3,7 @@ package services
 import (
 	"testing"
 
-	"github.com/tigusigalpa/bingx-go/http"
+	"github.com/tigusigalpa/bingx-go/v2/http"
 )
 
 func TestNewContractService(t *testing.T) {

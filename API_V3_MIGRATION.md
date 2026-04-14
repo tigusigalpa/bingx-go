@@ -18,7 +18,7 @@ This guide helps you migrate from previous versions of `bingx-go` to v1.4.0 with
 ### 1. Advanced Order Types
 
 ```go
-import "github.com/tigusigalpa/bingx-go/services"
+import "github.com/tigusigalpa/bingx-go/v2/services"
 
 // Use new order type constants
 order, err := client.Trade().CreateOrder(map[string]interface{}{
@@ -331,8 +331,8 @@ import (
     "fmt"
     "log"
     
-    bingx "github.com/tigusigalpa/bingx-go"
-    "github.com/tigusigalpa/bingx-go/services"
+    bingx "github.com/tigusigalpa/bingx-go/v2"
+    "github.com/tigusigalpa/bingx-go/v2/services"
 )
 
 func main() {
@@ -382,7 +382,7 @@ func main() {
 
 - **API Documentation**: https://bingx-api.github.io/docs-v3/
 - **GitHub Issues**: https://github.com/tigusigalpa/bingx-go/issues
-- **GoDoc**: https://pkg.go.dev/github.com/tigusigalpa/bingx-go
+- **GoDoc**: https://pkg.go.dev/github.com/tigusigalpa/bingx-go/v2
 
 ## Version History
 

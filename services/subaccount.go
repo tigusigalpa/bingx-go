@@ -1,6 +1,6 @@
 package services
 
-import "github.com/tigusigalpa/bingx-go/http"
+import "github.com/tigusigalpa/bingx-go/v2/http"
 
 // Sub-account wallet type constants
 const (

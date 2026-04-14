@@ -1,4 +1,4 @@
-module github.com/tigusigalpa/bingx-go
+module github.com/tigusigalpa/bingx-go/v2
 
 go 1.21
 

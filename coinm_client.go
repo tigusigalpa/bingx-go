@@ -1,8 +1,8 @@
 package bingx
 
 import (
-	"github.com/tigusigalpa/bingx-go/http"
-	"github.com/tigusigalpa/bingx-go/services/coinm"
+	"github.com/tigusigalpa/bingx-go/v2/http"
+	"github.com/tigusigalpa/bingx-go/v2/services/coinm"
 )
 
 type CoinMClient struct {
