@@ -15,7 +15,7 @@ func NewAccountService(client *http.BaseHTTPClient) *AccountService {
 }
 
 func (s *AccountService) GetBalance() (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v2/user/balance", nil)
+	return s.client.Request("GET", "/openApi/swap/v3/user/balance", nil)
 }
 
 func (s *AccountService) GetPositions(symbol *string) (map[string]interface{}, error) {

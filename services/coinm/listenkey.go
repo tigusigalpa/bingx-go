@@ -11,17 +11,17 @@ func NewListenKeyService(client *http.BaseHTTPClient) *ListenKeyService {
 }
 
 func (s *ListenKeyService) Generate() (map[string]interface{}, error) {
-	return s.client.Request("POST", "/openApi/swap/v1/listenKey", nil)
+	return s.client.Request("POST", "/openApi/user/auth/userDataStream", nil)
 }
 
 func (s *ListenKeyService) Extend(listenKey string) (map[string]interface{}, error) {
-	return s.client.Request("PUT", "/openApi/swap/v1/listenKey", map[string]interface{}{
+	return s.client.Request("PUT", "/openApi/user/auth/userDataStream", map[string]interface{}{
 		"listenKey": listenKey,
 	})
 }
 
 func (s *ListenKeyService) Delete(listenKey string) (map[string]interface{}, error) {
-	return s.client.Request("DELETE", "/openApi/swap/v1/listenKey", map[string]interface{}{
+	return s.client.Request("DELETE", "/openApi/user/auth/userDataStream", map[string]interface{}{
 		"listenKey": listenKey,
 	})
 }

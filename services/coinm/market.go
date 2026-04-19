@@ -11,17 +11,17 @@ func NewMarketService(client *http.BaseHTTPClient) *MarketService {
 }
 
 func (s *MarketService) GetContracts() (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/market/contracts", nil)
+	return s.client.Request("GET", "/openApi/cswap/v1/market/contracts", nil)
 }
 
 func (s *MarketService) GetTicker(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/market/ticker", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/market/ticker", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
 
 func (s *MarketService) GetDepth(symbol string, limit int) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/market/depth", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/market/depth", map[string]interface{}{
 		"symbol": symbol,
 		"limit":  limit,
 	})
@@ -41,42 +41,42 @@ func (s *MarketService) GetKlines(symbol, interval string, limit int, startTime,
 		params["endTime"] = *endTime
 	}
 
-	return s.client.Request("GET", "/openApi/swap/v1/market/kline", params)
+	return s.client.Request("GET", "/openApi/cswap/v1/market/klines", params)
 }
 
 func (s *MarketService) GetOpenInterest(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/market/openInterest", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/market/openInterest", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
 
 func (s *MarketService) GetFundingRate(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/market/fundingRate", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/market/premiumIndex", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
 
 func (s *MarketService) GetFundingRateHistory(symbol string, limit int) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/market/fundingRate/history", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/market/fundingRate", map[string]interface{}{
 		"symbol": symbol,
 		"limit":  limit,
 	})
 }
 
 func (s *MarketService) GetMarkPrice(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/market/markPrice", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/market/premiumIndex", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
 
 func (s *MarketService) GetIndexPrice(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/market/indexPrice", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/market/premiumIndex", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
 
 func (s *MarketService) GetRecentTrades(symbol string, limit int) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/market/trades", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/market/trades", map[string]interface{}{
 		"symbol": symbol,
 		"limit":  limit,
 	})

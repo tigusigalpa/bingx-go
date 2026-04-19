@@ -55,7 +55,7 @@ func (s *MarketService) GetSpotLatestPrice(symbol string) (map[string]interface{
 }
 
 func (s *MarketService) GetDepth(symbol string, limit int) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v2/market/depth", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/swap/v2/quote/depth", map[string]interface{}{
 		"symbol": symbol,
 		"limit":  limit,
 	})
@@ -82,7 +82,7 @@ func (s *MarketService) GetKlines(symbol, interval string, limit int, startTime,
 		params["endTime"] = *endTime
 	}
 
-	return s.client.Request("GET", "/openApi/swap/v2/market/kline", params)
+	return s.client.Request("GET", "/openApi/swap/v3/quote/klines", params)
 }
 
 // GetSpotKlines retrieves spot K-line (candlestick) data
@@ -113,7 +113,7 @@ func (s *MarketService) Get24hrTicker(symbol *string) (map[string]interface{}, e
 		params["symbol"] = *symbol
 	}
 
-	return s.client.Request("GET", "/openApi/swap/v2/market/ticker24hr", params)
+	return s.client.Request("GET", "/openApi/swap/v2/quote/ticker", params)
 }
 
 func (s *MarketService) GetSpot24hrTicker(symbol *string) (map[string]interface{}, error) {
@@ -133,7 +133,7 @@ func (s *MarketService) GetFundingRateHistory(symbol string, limit int) (map[str
 }
 
 func (s *MarketService) GetMarkPrice(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v2/market/markPrice", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/swap/v2/quote/premiumIndex", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
@@ -175,7 +175,7 @@ func (s *MarketService) GetAggregateTrades(symbol string, limit int, fromID, sta
 }
 
 func (s *MarketService) GetRecentTrades(symbol string, limit int) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v2/market/trades", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/swap/v2/quote/trades", map[string]interface{}{
 		"symbol": symbol,
 		"limit":  limit,
 	})
@@ -307,7 +307,7 @@ func (s *MarketService) GetBasis(symbol, contractType string, limit int, startTi
 }
 
 func (s *MarketService) GetOpenInterest(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v2/market/openInterest", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/swap/v2/quote/openInterest", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
@@ -330,7 +330,7 @@ func (s *MarketService) GetOpenInterestHistory(symbol, period string, limit int,
 }
 
 func (s *MarketService) GetFundingRateInfo(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v2/market/fundingRate", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/swap/v2/quote/fundingRate", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
@@ -341,7 +341,7 @@ func (s *MarketService) GetBookTicker(symbol *string) (map[string]interface{}, e
 		params["symbol"] = *symbol
 	}
 
-	return s.client.Request("GET", "/openApi/swap/v2/market/bookTicker", params)
+	return s.client.Request("GET", "/openApi/swap/v2/quote/bookTicker", params)
 }
 
 func (s *MarketService) GetSpotBookTicker(symbol *string) (map[string]interface{}, error) {

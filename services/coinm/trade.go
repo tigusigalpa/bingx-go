@@ -15,7 +15,7 @@ func NewTradeService(client *http.BaseHTTPClient) *TradeService {
 }
 
 func (s *TradeService) CreateOrder(params map[string]interface{}) (map[string]interface{}, error) {
-	return s.client.Request("POST", "/openApi/swap/v2/trade/order", params)
+	return s.client.Request("POST", "/openApi/cswap/v1/trade/order", params)
 }
 
 func (s *TradeService) CancelOrder(symbol string, orderID *string, clientOrderID *string) (map[string]interface{}, error) {
@@ -30,17 +30,17 @@ func (s *TradeService) CancelOrder(symbol string, orderID *string, clientOrderID
 		params["clientOrderId"] = *clientOrderID
 	}
 
-	return s.client.Request("DELETE", "/openApi/swap/v1/trade/order", params)
+	return s.client.Request("DELETE", "/openApi/cswap/v1/trade/cancelOrder", params)
 }
 
 func (s *TradeService) CancelAllOrders(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("DELETE", "/openApi/swap/v1/trade/allOpenOrders", map[string]interface{}{
+	return s.client.Request("DELETE", "/openApi/cswap/v1/trade/allOpenOrders", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
 
 func (s *TradeService) GetOrder(symbol, orderID string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/trade/order", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/trade/orderDetail", map[string]interface{}{
 		"symbol":  symbol,
 		"orderId": orderID,
 	})
@@ -52,7 +52,7 @@ func (s *TradeService) GetOpenOrders(symbol *string) (map[string]interface{}, er
 		params["symbol"] = *symbol
 	}
 
-	return s.client.Request("GET", "/openApi/swap/v1/trade/openOrders", params)
+	return s.client.Request("GET", "/openApi/cswap/v1/trade/openOrders", params)
 }
 
 func (s *TradeService) GetPositions(symbol *string) (map[string]interface{}, error) {
@@ -61,21 +61,21 @@ func (s *TradeService) GetPositions(symbol *string) (map[string]interface{}, err
 		params["symbol"] = *symbol
 	}
 
-	return s.client.Request("GET", "/openApi/swap/v1/user/positions", params)
+	return s.client.Request("GET", "/openApi/cswap/v1/user/positions", params)
 }
 
 func (s *TradeService) GetBalance() (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/user/balance", nil)
+	return s.client.Request("GET", "/openApi/cswap/v1/user/balance", nil)
 }
 
 func (s *TradeService) GetLeverage(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/trade/leverage", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/trade/leverage", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
 
 func (s *TradeService) SetLeverage(symbol, side string, leverage int) (map[string]interface{}, error) {
-	return s.client.Request("POST", "/openApi/swap/v1/trade/leverage", map[string]interface{}{
+	return s.client.Request("POST", "/openApi/cswap/v1/trade/leverage", map[string]interface{}{
 		"symbol":    symbol,
 		"side":      side,
 		"leverage":  leverage,
@@ -84,13 +84,13 @@ func (s *TradeService) SetLeverage(symbol, side string, leverage int) (map[strin
 }
 
 func (s *TradeService) GetMarginType(symbol string) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v1/trade/marginType", map[string]interface{}{
+	return s.client.Request("GET", "/openApi/cswap/v1/trade/marginType", map[string]interface{}{
 		"symbol": symbol,
 	})
 }
 
 func (s *TradeService) SetMarginType(symbol, marginType string) (map[string]interface{}, error) {
-	return s.client.Request("POST", "/openApi/swap/v1/trade/marginType", map[string]interface{}{
+	return s.client.Request("POST", "/openApi/cswap/v1/trade/marginType", map[string]interface{}{
 		"symbol":     symbol,
 		"marginType": marginType,
 		"timestamp":  time.Now().UnixMilli(),
@@ -98,7 +98,7 @@ func (s *TradeService) SetMarginType(symbol, marginType string) (map[string]inte
 }
 
 func (s *TradeService) SetPositionMargin(symbol, positionSide string, amount float64, marginType int) (map[string]interface{}, error) {
-	return s.client.Request("POST", "/openApi/swap/v1/trade/positionMargin", map[string]interface{}{
+	return s.client.Request("POST", "/openApi/cswap/v1/trade/positionMargin", map[string]interface{}{
 		"symbol":       symbol,
 		"positionSide": positionSide,
 		"amount":       amount,
@@ -119,7 +119,7 @@ func (s *TradeService) GetOrderHistory(symbol string, limit int, startTime, endT
 		params["endTime"] = *endTime
 	}
 
-	return s.client.Request("GET", "/openApi/swap/v1/trade/orderHistory", params)
+	return s.client.Request("GET", "/openApi/cswap/v1/trade/orderHistory", params)
 }
 
 func (s *TradeService) GetUserTrades(symbol string, limit int, startTime, endTime *int64) (map[string]interface{}, error) {
@@ -135,7 +135,7 @@ func (s *TradeService) GetUserTrades(symbol string, limit int, startTime, endTim
 		params["endTime"] = *endTime
 	}
 
-	return s.client.Request("GET", "/openApi/swap/v1/trade/userTrades", params)
+	return s.client.Request("GET", "/openApi/cswap/v1/trade/allFillOrders", params)
 }
 
 func (s *TradeService) GetPositionRisk(symbol *string, recvWindow *int64) (map[string]interface{}, error) {
@@ -150,7 +150,7 @@ func (s *TradeService) GetPositionRisk(symbol *string, recvWindow *int64) (map[s
 		params["recvWindow"] = *recvWindow
 	}
 
-	return s.client.Request("GET", "/openApi/swap/v1/user/positionRisk", params)
+	return s.client.Request("GET", "/openApi/cswap/v1/user/positions", params)
 }
 
 func (s *TradeService) GetIncomeHistory(symbol *string, incomeType *string, startTime, endTime *int64, limit int, recvWindow *int64) (map[string]interface{}, error) {
@@ -177,5 +177,5 @@ func (s *TradeService) GetIncomeHistory(symbol *string, incomeType *string, star
 		params["recvWindow"] = *recvWindow
 	}
 
-	return s.client.Request("GET", "/openApi/swap/v1/user/income", params)
+	return s.client.Request("GET", "/openApi/cswap/v1/user/income", params)
 }

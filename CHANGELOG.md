@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.3] - 2026-04-19
+
+### Fixed
+
+#### Coin-M Futures Service - Critical API Endpoint Fixes
+- **Market Service**: Fixed all endpoints to use correct `/openApi/cswap/v1/market/` path instead of `/openApi/swap/v1/market/`
+  - `GetContracts()` → `/openApi/cswap/v1/market/contracts`
+  - `GetTicker()` → `/openApi/cswap/v1/market/ticker`
+  - `GetDepth()` → `/openApi/cswap/v1/market/depth`
+  - `GetKlines()` → `/openApi/cswap/v1/market/klines`
+  - `GetOpenInterest()` → `/openApi/cswap/v1/market/openInterest`
+  - `GetFundingRate()` → `/openApi/cswap/v1/market/premiumIndex`
+  - `GetMarkPrice()` → `/openApi/cswap/v1/market/premiumIndex`
+  - `GetIndexPrice()` → `/openApi/cswap/v1/market/premiumIndex`
+  - `GetRecentTrades()` → `/openApi/cswap/v1/market/trades`
+
+- **Trade Service**: Fixed all endpoints to use correct `/openApi/cswap/v1/` path
+  - `CreateOrder()` → `/openApi/cswap/v1/trade/order`
+  - `CancelOrder()` → `/openApi/cswap/v1/trade/cancelOrder`
+  - `CancelAllOrders()` → `/openApi/cswap/v1/trade/allOpenOrders`
+  - `GetOrder()` → `/openApi/cswap/v1/trade/orderDetail`
+  - `GetOpenOrders()` → `/openApi/cswap/v1/trade/openOrders`
+  - `GetPositions()` → `/openApi/cswap/v1/user/positions`
+  - `GetBalance()` → `/openApi/cswap/v1/user/balance`
+  - `GetLeverage()` / `SetLeverage()` → `/openApi/cswap/v1/trade/leverage`
+  - `GetMarginType()` / `SetMarginType()` → `/openApi/cswap/v1/trade/marginType`
+  - `SetPositionMargin()` → `/openApi/cswap/v1/trade/positionMargin`
+  - `GetOrderHistory()` → `/openApi/cswap/v1/trade/orderHistory`
+  - `GetUserTrades()` → `/openApi/cswap/v1/trade/allFillOrders`
+
+- **ListenKey Service**: Fixed endpoints to use correct `/openApi/user/auth/userDataStream` path
+
+#### Account Service
+- `GetBalance()` → Updated to use v3 API `/openApi/swap/v3/user/balance` (was v2)
+
+#### Market Service - Endpoint Path Fixes
+- `GetKlines()` → `/openApi/swap/v3/quote/klines` (was v2/market/kline)
+- `GetDepth()` → `/openApi/swap/v2/quote/depth` (was v2/market/depth)
+- `GetRecentTrades()` → `/openApi/swap/v2/quote/trades` (was v2/market/trades)
+- `GetMarkPrice()` → `/openApi/swap/v2/quote/premiumIndex` (was v2/market/markPrice)
+- `Get24hrTicker()` → `/openApi/swap/v2/quote/ticker` (was v2/market/ticker24hr)
+- `GetOpenInterest()` → `/openApi/swap/v2/quote/openInterest` (was v2/market/openInterest)
+- `GetFundingRateInfo()` → `/openApi/swap/v2/quote/fundingRate` (was v2/market/fundingRate)
+- `GetBookTicker()` → `/openApi/swap/v2/quote/bookTicker` (was v2/market/bookTicker)
+
 ## [1.4.0] - 2026-04-05
 
 ### 🎉 BingX API v3 Support
