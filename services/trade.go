@@ -541,3 +541,17 @@ func (s *TradeService) GetTWAPOrders(symbol *string, status *string, startTime, 
 
 	return s.client.Request("GET", "/openApi/swap/v2/trade/twapOrders", params)
 }
+
+// GetVst retrieves VST (Virtual Simulation Trading) information
+// This enables demo trading functionality in the simulated environment
+func (s *TradeService) GetVst(recvWindow *int64) (map[string]interface{}, error) {
+	params := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+	}
+
+	if recvWindow != nil {
+		params["recvWindow"] = *recvWindow
+	}
+
+	return s.client.Request("POST", "/openApi/swap/v2/trade/getVst", params)
+}

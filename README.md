@@ -949,6 +949,49 @@ client := bingx.NewClient(
 )
 ```
 
+### Demo Trading Configuration
+
+For demo trading in the VST (Virtual Simulation Trading) environment:
+
+```go
+// Method 1: Use dedicated demo client constructor
+demoClient := bingx.NewDemoClient(
+    "YOUR_API_KEY",
+    "YOUR_API_SECRET",
+    bingx.WithSourceKey("demo-trading-bot"),
+)
+
+// Method 2: Use demo environment option
+demoClient := bingx.NewClient(
+    "YOUR_API_KEY",
+    "YOUR_API_SECRET",
+    bingx.WithDemoEnvironment(),
+)
+
+// Method 3: Manually set VST endpoint
+demoClient := bingx.NewClient(
+    "YOUR_API_KEY",
+    "YOUR_API_SECRET",
+    bingx.WithBaseURI("https://open-api-vst.bingx.com"),
+)
+```
+
+**Check Environment:**
+```go
+fmt.Printf("Endpoint: %s\n", demoClient.GetEndpoint())
+// Output: https://open-api-vst.bingx.com (demo) or https://open-api.bingx.com (live)
+```
+
+**VST Status Check:**
+```go
+// Get demo trading information
+vstInfo, err := demoClient.Trade().GetVst(nil)
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Printf("VST Info: %+v\n", vstInfo)
+```
+
 ### Timeout Configuration
 
 ```go
@@ -968,6 +1011,7 @@ client := bingx.NewClient(
 | Method                                            | Description                       | Returns                |
 |---------------------------------------------------|-----------------------------------|------------------------|
 | `NewClient(apiKey, apiSecret string, options...)` | Create new BingX client           | `*Client`              |
+| `NewDemoClient(apiKey, apiSecret string, options...)` | Create demo trading client (VST)  | `*Client`              |
 | `client.Market()`                                 | Access market data service        | `*MarketService`       |
 | `client.Account()`                                | Access account management service | `*AccountService`      |
 | `client.Trade()`                                  | Access trading operations service | `*TradeService`        |
@@ -1064,6 +1108,7 @@ client := bingx.NewClient(
 - `ChangeLeverage(symbol, side, leverage, ...)` - Change leverage
 - `CalculateFuturesCommission(margin, leverage, rate)` - Calculate commission
 - `GetCommissionAmount(margin, leverage)` - Get commission amount
+- `GetVst(recvWindow)` - Get VST (Virtual Simulation Trading) information
 
 </details>
 

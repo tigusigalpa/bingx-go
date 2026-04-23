@@ -55,6 +55,14 @@ func NewClient(apiKey, apiSecret string, options ...ClientOption) *Client {
 	return client
 }
 
+// NewDemoClient creates a client configured for demo trading (VST environment)
+func NewDemoClient(apiKey, apiSecret string, options ...ClientOption) *Client {
+	// Prepend the demo environment option
+	demoOptions := []ClientOption{WithDemoEnvironment()}
+	demoOptions = append(demoOptions, options...)
+	return NewClient(apiKey, apiSecret, demoOptions...)
+}
+
 type ClientConfig struct {
 	BaseURI           string
 	SourceKey         string
@@ -78,6 +86,13 @@ func WithSourceKey(key string) ClientOption {
 func WithSignatureEncoding(encoding string) ClientOption {
 	return func(c *ClientConfig) {
 		c.SignatureEncoding = encoding
+	}
+}
+
+// WithDemoEnvironment configures the client for demo trading (VST environment)
+func WithDemoEnvironment() ClientOption {
+	return func(c *ClientConfig) {
+		c.BaseURI = "https://open-api-vst.bingx.com"
 	}
 }
 
