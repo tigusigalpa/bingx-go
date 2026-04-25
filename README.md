@@ -13,7 +13,8 @@
 </div>
 
 Go client for the [BingX](https://bingx.com) cryptocurrency exchange API v3. Covers USDT-M and Coin-M perpetual futures,
-spot trading, copy trading, sub-accounts, and WebSocket streaming. 240+ API methods with full v3 support.
+TradFi (stocks, forex, commodities, indices), spot trading, copy trading, sub-accounts, and WebSocket streaming.
+260+ API methods with full v3 support.
 
 **Package:** [pkg.go.dev/github.com/tigusigalpa/bingx-go/v2](https://pkg.go.dev/github.com/tigusigalpa/bingx-go/v2)
 
@@ -39,12 +40,14 @@ spot trading, copy trading, sub-accounts, and WebSocket streaming. 240+ API meth
   - [Trading Operations](#trade-service---trading-operations)
   - [Advanced Trading (v3)](#advanced-trading-features-v3) ⭐
   - [Coin-M Futures](#coin-m-perpetual-futures)
+  - [TradFi (Traditional Finance)](#tradfi-traditional-finance)
   - [WebSocket Streaming](#websocket-streaming)
     - [Market Data](#market-service---market-data)
     - [Account Management](#account-service---account-management)
     - [Trading Operations](#trade-service---trading-operations)
     - [Wallet Management](#wallet-service---wallet-management)
     - [Coin-M Futures](#coin-m-perpetual-futures)
+    - [TradFi](#tradfi-traditional-finance)
     - [Sub-Accounts](#sub-account-management)
     - [Copy Trading](#copy-trading-operations)
     - [WebSocket Streaming](#websocket-streaming)
@@ -158,6 +161,32 @@ spot trading, copy trading, sub-accounts, and WebSocket streaming. 240+ API meth
     - Balance queries
     - Trade history
 
+#### **TradFi (Traditional Finance)** ⭐
+
+- **TradFi Market** (15+ methods)
+    - Stock tokens (TSLA, AAPL, NVDA)
+    - Forex pairs (EUR-USD, GBP-USD)
+    - Commodities (GOLD, SILVER, OIL)
+    - Stock indices (SPX, DJI, NDX)
+    - Real-time & historical prices
+    - Market depth & order books
+    - Candlestick data (K-lines)
+    - Funding rates & open interest
+
+- **TradFi Trade** (20+ methods)
+    - Order management (same as crypto perpetuals)
+    - TWAP orders for large trades
+    - Position management & one-click reverse
+    - Leverage & margin configuration
+    - Trade history & analytics
+
+- **TradFi Account** (15+ methods)
+    - Balance & position tracking
+    - Position risk monitoring
+    - Income history (PNL, funding, commissions)
+    - Hedge/One-way mode support
+    - Multi-assets margin mode
+
 </td>
 </tr>
 </table>
@@ -183,6 +212,7 @@ spot trading, copy trading, sub-accounts, and WebSocket streaming. 240+ API meth
 bingx-go/
 ├── client.go              # Main client with service orchestration
 ├── coinm_client.go        # Coin-M futures client
+├── tradfi_client.go       # TradFi (Traditional Finance) client
 ├── http/
 │   └── client.go          # HTTP client with HMAC signing
 ├── errors/
@@ -197,10 +227,15 @@ bingx-go/
 │   ├── copytrading.go     # Copy trading service
 │   ├── contract.go        # Contract service
 │   ├── listenkey.go       # WebSocket auth service
-│   └── coinm/             # Coin-M specific services
-│       ├── market.go
-│       ├── trade.go
-│       └── listenkey.go
+│   ├── coinm/             # Coin-M specific services
+│   │   ├── market.go
+│   │   ├── trade.go
+│   │   └── listenkey.go
+│   └── tradfi/            # TradFi specific services
+│       ├── market.go      # Stocks, forex, commodities market data
+│       ├── trade.go       # TradFi trading operations
+│       ├── account.go     # TradFi account management
+│       └── listenkey.go   # WebSocket auth for TradFi
 └── examples/              # Usage examples
 ```
 
@@ -558,6 +593,92 @@ indexPrice, err := client.CoinM().Market().GetIndexPrice("BTC-USD")
 trades, err := client.CoinM().Market().GetRecentTrades("BTC-USD", 100)
 ```
 
+### TradFi (Traditional Finance)
+
+Access stock tokens, forex pairs, commodities, and stock indices traded as perpetual swaps.
+
+```go
+// Get TradFi client
+tradfi := client.TradFi()
+
+// Get stock symbols (TSLA, AAPL, NVDA, etc.)
+stocks, err := tradfi.Market().GetStockSymbols()
+
+// Get forex symbols (EUR-USD, GBP-USD, etc.)
+forex, err := tradfi.Market().GetForexSymbols()
+
+// Get commodity symbols (GOLD, SILVER, OIL, etc.)
+commodities, err := tradfi.Market().GetCommoditySymbols()
+
+// Get index symbols (SPX, DJI, NDX, etc.)
+indices, err := tradfi.Market().GetIndexSymbols()
+
+// Get 24h ticker for a stock
+ticker, err := tradfi.Market().GetTicker("TSLA-USDT")
+
+// Get latest price for forex
+price, err := tradfi.Market().GetLatestPrice("EUR-USDT")
+
+// Get order book depth
+depth, err := tradfi.Market().GetDepth("GOLD-USDT", 20)
+
+// Get klines (candlestick data)
+klines, err := tradfi.Market().GetKlines("AAPL-USDT", "1h", 100, nil, nil)
+
+// Get funding rate
+funding, err := tradfi.Market().GetFundingRate("EUR-USDT")
+
+// Get open interest
+oi, err := tradfi.Market().GetOpenInterest("TSLA-USDT")
+
+// Create a stock order
+order, err := tradfi.Trade().CreateOrder(map[string]interface{}{
+    "symbol":       "TSLA-USDT",
+    "side":         "BUY",
+    "type":         "LIMIT",
+    "positionSide": "LONG",
+    "price":        250.0,
+    "quantity":     1.0,
+    "timeInForce":  "GTC",
+})
+
+// Create a TWAP order (for large trades)
+twap, err := tradfi.Trade().PlaceTWAPOrder(map[string]interface{}{
+    "symbol":   "AAPL-USDT",
+    "side":     "BUY",
+    "quantity": 100.0,
+    "duration": 3600,  // Total duration in seconds
+    "interval": 60,    // Seconds between sub-orders
+})
+
+// Get positions
+positions, err := tradfi.Account().GetPositions(nil)
+
+// Get account balance
+balance, err := tradfi.Account().GetBalance()
+
+// Get position risk (includes liquidation price)
+risk, err := tradfi.Account().GetPositionRisk(&symbol)
+
+// Get income history (PNL, funding fees, commissions)
+incomeType := "REALIZED_PNL"
+income, err := tradfi.Account().GetIncomeHistory(&symbol, &incomeType, nil, nil, 100)
+
+// Set hedge mode
+mode, err := tradfi.Account().SetPositionMode(true)  // true = hedge mode
+
+// Set leverage
+leverage, err := tradfi.Trade().SetLeverage("TSLA-USDT", 10, nil)
+```
+
+#### TradFi Trading Notes
+
+- **Stock Hours**: US stocks trade Mon–Fri ~09:30-16:00 ET
+- **Forex Hours**: 24/5 trading (Sun 17:00 ET – Fri 17:00 ET)
+- **Commodities**: Vary by instrument; GOLD/SILVER trade nearly 24h
+- **Leverage**: Typically lower than crypto (5x-20x for stocks, 50x-100x for forex)
+- **Funding Rates**: Applied every 8 hours (00:00, 08:00, 16:00 UTC)
+
 ### Sub-Account Management
 
 ```go
@@ -899,11 +1020,12 @@ bookTicker, _ := client.Market().GetBookTicker(&symbol)
 
 ### 📊 v3 Statistics
 
-- **26 new methods** across all services
-- **240+ total API methods** (up from 220+)
+- **50+ new methods** across all services (including TradFi)
+- **260+ total API methods** (up from 220+)
 - **3 new order types** for advanced strategies
 - **100% backward compatible** - no breaking changes
 - **Full Coin-M v2 support** with enhanced features
+- **Full TradFi support** — Trade stocks, forex, commodities, and indices
 
 ### 🔄 Migration from Previous Versions
 
@@ -1022,6 +1144,7 @@ fmt.Printf("VST Info: %+v\n", vstInfo)
 | `client.SubAccount()`                             | Access sub-account service        | `*SubAccountService`   |
 | `client.CopyTrading()`                            | Access copy trading service       | `*CopyTradingService`  |
 | `client.CoinM()`                                  | Access Coin-M futures client      | `*CoinMClient`         |
+| `client.TradFi()`                                 | Access TradFi client (stocks, forex, commodities) | `*TradFiClient`        |
 | `client.NewMarketDataStream()`                    | Create market data WebSocket      | `*MarketDataStream`    |
 | `client.NewAccountDataStream(listenKey)`          | Create account data WebSocket     | `*AccountDataStream`   |
 | `client.GetHTTPClient()`                          | Get underlying HTTP client        | `*http.BaseHTTPClient` |

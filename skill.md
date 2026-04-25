@@ -52,6 +52,7 @@ client.CopyTrading() // *services.CopyTradingService
 client.Contract()    // *services.ContractService
 client.ListenKey()   // *services.ListenKeyService
 client.CoinM()       // *CoinMClient  (Coin-M futures)
+client.TradFi()      // *TradFiClient (Traditional Finance - stocks, forex, commodities)
 ```
 
 Shortcut methods on client root: `GetBalance()`, `GetSymbols()`, `CreateOrder()`, `NewMarketDataStream()`, `NewAccountDataStream(listenKey)`.
@@ -421,6 +422,106 @@ coinM.ListenKey().Delete(listenKey)
 
 ---
 
+## TradFi (Traditional Finance) — `client.TradFi()`
+
+TradFi provides access to traditional financial instruments traded as perpetual swaps on BingX:
+- **Stock Tokens**: TSLA-USDT, AAPL-USDT, NVDA-USDT, etc.
+- **Forex Pairs**: EUR-USD, GBP-USD, USD-JPY, etc.
+- **Commodities**: GOLD-USDT, SILVER-USDT, OIL-USDT, etc.
+- **Stock Indices**: SPX-USDT, DJI-USDT, NDX-USDT, etc.
+
+Endpoint prefix: `/openApi/swap/v2/` (same as USDT-M perpetuals)
+
+```go
+tradfi := client.TradFi()
+
+// Market Data
+tradfi.Market().GetSymbols()                    // All TradFi symbols
+tradfi.Market().GetStockSymbols()               // Stock tokens only
+tradfi.Market().GetForexSymbols()               // Forex pairs only
+tradfi.Market().GetCommoditySymbols()           // Commodities only
+tradfi.Market().GetIndexSymbols()                // Stock indices only
+tradfi.Market().GetTicker("TSLA-USDT")          // 24h ticker
+tradfi.Market().GetLatestPrice("EUR-USDT")      // Latest price
+tradfi.Market().GetDepth("GOLD-USDT", 20)       // Order book depth
+tradfi.Market().GetKlines("AAPL-USDT", "1h", 100, nil, nil)  // Candlesticks
+tradfi.Market().GetMarkPrice("TSLA-USDT")       // Mark price
+tradfi.Market().GetFundingRate("EUR-USDT")      // Current funding rate
+tradfi.Market().GetFundingRateHistory("SPX-USDT", 100)
+tradfi.Market().GetOpenInterest("GOLD-USDT")    // Open interest
+tradfi.Market().GetRecentTrades("TSLA-USDT", 50)
+tradfi.Market().GetBookTicker("AAPL-USDT")      // Best bid/ask
+tradfi.Market().GetTradingRules("EUR-USDT")     // Trading specifications
+
+// Trading - Same interface as crypto perpetuals
+tradfi.Trade().CreateOrder(map[string]interface{}{
+    "symbol":       "TSLA-USDT",
+    "side":         "BUY",
+    "type":         "LIMIT",
+    "positionSide": "LONG",
+    "price":        250.0,
+    "quantity":     1.0,
+})
+tradfi.Trade().CreateTestOrder(params)
+tradfi.Trade().CancelOrder("TSLA-USDT", &orderID, nil)
+tradfi.Trade().CancelAllOrders(&symbol)
+tradfi.Trade().GetOrder("EUR-USDT", orderID)
+tradfi.Trade().GetOpenOrders(&symbol, 100)
+tradfi.Trade().GetOrderHistory(&symbol, 100, nil, nil)
+tradfi.Trade().GetUserTrades(&symbol, 100, nil, nil)
+tradfi.Trade().SetLeverage("GOLD-USDT", 20, nil)
+tradfi.Trade().GetLeverage("AAPL-USDT")
+tradfi.Trade().SetMarginType("EUR-USDT", "ISOLATED")
+tradfi.Trade().GetMarginType("TSLA-USDT")
+tradfi.Trade().SetPositionMargin(symbol, positionSide, amount, marginType)
+tradfi.Trade().OneClickReversePosition("TSLA-USDT")
+tradfi.Trade().ModifyOrder(symbol, &orderID, nil, newPrice, newQty)
+tradfi.Trade().SetAutoAddMargin(symbol, positionSide, true)
+
+// TWAP Orders (Time-Weighted Average Price)
+tradfi.Trade().PlaceTWAPOrder(map[string]interface{}{
+    "symbol":   "AAPL-USDT",
+    "side":     "BUY",
+    "quantity": 100.0,
+    "duration": 3600,
+    "interval": 60,
+})
+tradfi.Trade().GetTWAPOrder(orderID)
+tradfi.Trade().GetTWAPOrders(&symbol, &status, 100)
+tradfi.Trade().CancelTWAPOrder(orderID)
+
+// Account
+tradfi.Account().GetBalance()
+tradfi.Account().GetAccountInfo()
+tradfi.Account().GetPositions(&symbol)
+tradfi.Account().GetPositionRisk(&symbol)
+tradfi.Account().GetIncomeHistory(&symbol, &incomeType, startTime, endTime, 100)
+tradfi.Account().GetCommissionHistory(symbol, startTime, endTime, 100)
+tradfi.Account().GetForceOrders(&symbol, startTime, endTime, 100)
+tradfi.Account().GetPositionMode()
+tradfi.Account().SetPositionMode(true)  // hedge mode
+tradfi.Account().GetMarginMode(symbol)
+tradfi.Account().SetMarginMode(symbol, "ISOLATED")
+tradfi.Account().GetTradingFees(symbol)
+tradfi.Account().GetMultiAssetsMode()
+tradfi.Account().SetMultiAssetsMode(true)
+
+// Listen Key (WebSocket)
+tradfi.ListenKey().Create()
+tradfi.ListenKey().Extend(listenKey)
+tradfi.ListenKey().Delete(listenKey)
+```
+
+### TradFi Trading Notes
+
+- **Trading Hours**: Stock tokens follow US market hours (Mon-Fri 09:30-16:00 ET)
+- **Forex Hours**: 24/5 (Sun 17:00 ET - Fri 17:00 ET)
+- **Commodities**: Vary by instrument (GOLD, SILVER trade nearly 24h)
+- **Leverage**: Typically lower than crypto (5x-20x for stocks, 50x-100x for forex)
+- **Funding Rates**: Applied every 8 hours (00:00, 08:00, 16:00 UTC)
+
+---
+
 ## WebSocket Streams
 
 ### Market Data Stream
@@ -553,6 +654,7 @@ for _, pos := range positions {
 |---------|--------|
 | USDT-M Perpetual Swap | `/openApi/swap/v2/` |
 | Coin-M Perpetual Swap | `/openApi/cswap/v1/` |
+| TradFi (Stocks, Forex, Commodities) | `/openApi/swap/v2/` |
 | Spot | `/openApi/spot/v1/` |
 | Wallet | `/openApi/wallets/v1/` |
 | Sub-Account | `/openApi/subAccount/v1/` |
@@ -569,8 +671,10 @@ for _, pos := range positions {
 |----------|:---:|
 | Market data (prices, klines, depth, OI) | No |
 | Symbols list | No |
+| TradFi market data | No |
 | Account balance & positions | Yes |
 | Place / cancel / modify orders | Yes |
+| TradFi trading | Yes |
 | TWAP orders | Yes |
 | Listen keys | Yes |
 | Wallet deposit/withdraw | Yes |
@@ -601,6 +705,8 @@ for _, pos := range positions {
 | Long/Short Ratio | `Market().GetLongShortRatio()` |
 | Aggregate Trades | `Market().GetAggregateTrades()` |
 | Hedge Mode | `Account().GetPositionMode()` / `SetPositionMode()` |
+| TradFi Support | `client.TradFi()` — Stocks, Forex, Commodities, Indices |
+| TradFi Symbol Filter | `TradFi().Market().GetStockSymbols()` / `GetForexSymbols()` / `GetCommoditySymbols()` |
 
 ---
 

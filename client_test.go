@@ -62,6 +62,7 @@ func TestClientServices(t *testing.T) {
 		{"SpotAccount", client.SpotAccount()},
 		{"SubAccount", client.SubAccount()},
 		{"CopyTrading", client.CopyTrading()},
+		{"TradFi", client.TradFi()},
 	}
 
 	for _, tt := range tests {
@@ -159,5 +160,37 @@ func TestCoinMClient(t *testing.T) {
 
 	if coinm.ListenKey() == nil {
 		t.Error("CoinM ListenKey service should not be nil")
+	}
+}
+
+func TestTradFiClient(t *testing.T) {
+	client := NewClient("test-key", "test-secret")
+	tradfi := client.TradFi()
+
+	if tradfi == nil {
+		t.Fatal("TradFi client should not be nil")
+	}
+
+	// Test singleton pattern
+	tradfi2 := client.TradFi()
+	if tradfi != tradfi2 {
+		t.Error("TradFi should return the same instance")
+	}
+
+	// Test all services
+	if tradfi.Market() == nil {
+		t.Error("TradFi Market service should not be nil")
+	}
+
+	if tradfi.Trade() == nil {
+		t.Error("TradFi Trade service should not be nil")
+	}
+
+	if tradfi.Account() == nil {
+		t.Error("TradFi Account service should not be nil")
+	}
+
+	if tradfi.ListenKey() == nil {
+		t.Error("TradFi ListenKey service should not be nil")
 	}
 }

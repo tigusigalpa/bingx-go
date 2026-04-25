@@ -7,17 +7,18 @@ import (
 )
 
 type Client struct {
-	httpClient  *http.BaseHTTPClient
-	market      *services.MarketService
-	account     *services.AccountService
-	trade       *services.TradeService
-	contract    *services.ContractService
-	listenKey   *services.ListenKeyService
-	wallet      *services.WalletService
-	spotAccount *services.SpotAccountService
-	subAccount  *services.SubAccountService
-	copyTrading *services.CopyTradingService
-	coinMClient *CoinMClient
+	httpClient   *http.BaseHTTPClient
+	market       *services.MarketService
+	account      *services.AccountService
+	trade        *services.TradeService
+	contract     *services.ContractService
+	listenKey    *services.ListenKeyService
+	wallet       *services.WalletService
+	spotAccount  *services.SpotAccountService
+	subAccount   *services.SubAccountService
+	copyTrading  *services.CopyTradingService
+	coinMClient  *CoinMClient
+	tradfiClient *TradFiClient
 }
 
 func NewClient(apiKey, apiSecret string, options ...ClientOption) *Client {
@@ -137,6 +138,14 @@ func (c *Client) CoinM() *CoinMClient {
 		c.coinMClient = NewCoinMClient(c.httpClient)
 	}
 	return c.coinMClient
+}
+
+// TradFi returns the TradFi client for Traditional Finance instruments (stocks, forex, commodities, indices).
+func (c *Client) TradFi() *TradFiClient {
+	if c.tradfiClient == nil {
+		c.tradfiClient = NewTradFiClient(c.httpClient)
+	}
+	return c.tradfiClient
 }
 
 func (c *Client) GetHTTPClient() *http.BaseHTTPClient {

@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.4] - 2026-04-23
+
+### Added
+
+#### Demo Trading Support (VST Environment)
+- **New Client Constructor**: `NewDemoClient()` for easy demo trading setup
+- **Configuration Option**: `WithDemoEnvironment()` to configure VST endpoint
+- **VST API Method**: `GetVst()` in TradeService for demo trading information
+- **Demo Examples**: Complete demo trading example in `examples/demo_trading/`
+- **Documentation**: Comprehensive demo trading guide and README updates
+
+#### Features
+- **Risk-Free Trading**: Test strategies without real money using BingX VST environment
+- **Full API Compatibility**: All 240+ API methods work in demo mode
+- **Real Market Data**: Uses live market prices for realistic simulation
+- **Easy Environment Switching**: Seamless transition between demo and live environments
+
+#### Technical Details
+- **VST Endpoint**: `https://open-api-vst.bingx.com` (Virtual Simulation Trading)
+- **Backward Compatibility**: 100% compatible with existing code
+- **Zero Breaking Changes**: All existing functionality unchanged
+
+### Fixed
+- Removed unused import in demo trading example (lint error)
+
+### Documentation
+- Added demo trading configuration section to main README
+- Updated API reference with new demo trading methods
+- Created comprehensive demo trading guide
+
 ## [2.1.3] - 2026-04-19
 
 ### Fixed
