@@ -20,7 +20,11 @@ type WebSocketClient struct {
 	callbacks []MessageCallback
 	running   bool
 	mu        sync.RWMutex
-	done      chan struct{}
+	// writeMu serializes WriteMessage calls. gorilla/websocket allows only
+	// one concurrent writer per connection. Held independently of mu so a
+	// long network write can't pin the state mutex and block reconnects.
+	writeMu sync.Mutex
+	done    chan struct{}
 }
 
 func NewWebSocketClient(url string) *WebSocketClient {
@@ -66,9 +70,10 @@ func (c *WebSocketClient) Disconnect() error {
 
 func (c *WebSocketClient) Send(message map[string]interface{}) error {
 	c.mu.RLock()
-	defer c.mu.RUnlock()
+	conn := c.conn
+	c.mu.RUnlock()
 
-	if c.conn == nil {
+	if conn == nil {
 		return fmt.Errorf("WebSocket client is not connected")
 	}
 
@@ -77,7 +82,12 @@ func (c *WebSocketClient) Send(message map[string]interface{}) error {
 		return fmt.Errorf("failed to marshal message: %w", err)
 	}
 
-	return c.conn.WriteMessage(websocket.TextMessage, data)
+	// Serialize writes via writeMu (not c.mu) so a stalled WriteMessage on
+	// a half-broken connection can't pin the state mutex and starve the
+	// Disconnect/Connect path that wants to swap c.conn during reconnect.
+	c.writeMu.Lock()
+	defer c.writeMu.Unlock()
+	return conn.WriteMessage(websocket.TextMessage, data)
 }
 
 func (c *WebSocketClient) Subscribe(id, dataType string) error {
