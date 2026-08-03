@@ -15,6 +15,7 @@ type Client struct {
 	listenKey    *services.ListenKeyService
 	wallet       *services.WalletService
 	spotAccount  *services.SpotAccountService
+	spotTrade    *services.SpotTradeService
 	subAccount   *services.SubAccountService
 	copyTrading  *services.CopyTradingService
 	coinMClient  *CoinMClient
@@ -50,6 +51,7 @@ func NewClient(apiKey, apiSecret string, options ...ClientOption) *Client {
 	client.listenKey = services.NewListenKeyService(httpClient)
 	client.wallet = services.NewWalletService(httpClient)
 	client.spotAccount = services.NewSpotAccountService(httpClient)
+	client.spotTrade = services.NewSpotTradeService(httpClient)
 	client.subAccount = services.NewSubAccountService(httpClient)
 	client.copyTrading = services.NewCopyTradingService(httpClient)
 
@@ -123,6 +125,10 @@ func (c *Client) Wallet() *services.WalletService {
 
 func (c *Client) SpotAccount() *services.SpotAccountService {
 	return c.spotAccount
+}
+
+func (c *Client) SpotTrade() *services.SpotTradeService {
+	return c.spotTrade
 }
 
 func (c *Client) SubAccount() *services.SubAccountService {

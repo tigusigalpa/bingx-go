@@ -39,6 +39,7 @@ TradFi (stocks, forex, commodities, indices), spot trading, copy trading, sub-ac
   - [Account Management](#account-service---account-management)
   - [Trading Operations](#trade-service---trading-operations)
   - [Advanced Trading (v3)](#advanced-trading-features-v3) ⭐
+  - [Spot Trading](#spot-trading---spot-order-management) ⭐
   - [Coin-M Futures](#coin-m-perpetual-futures)
   - [TradFi (Traditional Finance)](#tradfi-traditional-finance)
   - [WebSocket Streaming](#websocket-streaming)
@@ -546,6 +547,107 @@ transfer, err := client.SpotAccount().InternalTransfer(
 // Get all account balances
 allBalances, err := client.SpotAccount().GetAllAccountBalances()
 ```
+
+### Spot Trading - Spot Order Management
+
+`SpotAccount()` only covers balances and transfers; `SpotTrade()` is the
+dedicated service for placing, cancelling, and querying **spot** orders
+(as opposed to `Trade()`, which is for **perpetual futures** orders). Spot
+trading buys/sells the underlying asset directly with no leverage or
+position side, so its parameters and endpoints differ from `Trade()`.
+
+**Decimal safety:** `SpotOrderRequest.Quantity`, `Price`, and
+`QuoteOrderQty` are all `string`, never `float64`. Passing decimals as
+`float64` risks silent binary-precision rounding (e.g. `0.1 + 0.2 !=
+0.3` in IEEE 754), which can cause rejected orders or subtly wrong fills.
+Always format your decimal amounts as exact strings.
+
+```go
+import "github.com/tigusigalpa/bingx-go/v2/services"
+
+// Create a limit buy order (typed, validated client-side)
+price := "60000"
+quantity := "0.001"
+
+order, err := client.SpotTrade().CreateOrderRequest(services.SpotOrderRequest{
+    Symbol:   "BTC-USDT",
+    Side:     services.SpotSideBuy,
+    Type:     services.SpotOrderTypeLimit,
+    Quantity: quantity,
+    Price:    &price,
+})
+
+// Create a market buy order using a quote amount (spend 100 USDT)
+quoteOrderQty := "100"
+marketOrder, err := client.SpotTrade().CreateOrderRequest(services.SpotOrderRequest{
+    Symbol:        "BTC-USDT",
+    Side:          services.SpotSideBuy,
+    Type:          services.SpotOrderTypeMarket,
+    QuoteOrderQty: &quoteOrderQty,
+})
+
+// Advanced order types (TAKE_STOP_LIMIT, TAKE_STOP_MARKET, TRIGGER_LIMIT,
+// TRIGGER_MARKET) or exchange-specific parameters: use the raw CreateOrder.
+order, err = client.SpotTrade().CreateOrder(map[string]interface{}{
+    "symbol":     "BTC-USDT",
+    "side":       "SELL",
+    "type":       "TRIGGER_LIMIT",
+    "quantity":   "0.001",
+    "price":      "58000",
+    "stopPrice":  "59000",
+})
+
+// Cancel an order by orderID or clientOrderID
+orderID := "123456789"
+_, err = client.SpotTrade().CancelOrder("BTC-USDT", &orderID, nil)
+
+// Cancel all open orders for a symbol (nil = all symbols)
+_, err = client.SpotTrade().CancelAllOrders(&symbol)
+
+// Cancel a batch of orders
+_, err = client.SpotTrade().CancelBatchOrders("BTC-USDT", []string{"111", "222"}, nil)
+
+// Query a single order, current open orders, order history, and fills
+order, err = client.SpotTrade().GetOrder("BTC-USDT", &orderID, nil)
+openOrders, err := client.SpotTrade().GetOpenOrders(&symbol) // no limit param on this endpoint
+history, err := client.SpotTrade().GetOrderHistory(&symbol, 50, nil, nil)
+trades, err := client.SpotTrade().GetTrades(&symbol, 100, nil, nil) // symbol is required here
+```
+
+**Order amendment:** BingX Spot does not support true in-place order
+modification the way Futures does (`Trade().ModifyOrder`, which only
+changes an existing order's quantity via `/openApi/swap/v1/trade/amend`).
+Instead, the Spot API exposes a native cancel-and-replace endpoint
+(`POST /openApi/spot/v1/trade/order/cancelReplace`) that atomically cancels
+one order and places a new one in a single signed request. This is exposed
+as `AmendOrder`:
+
+```go
+// Amend (cancel + replace) an order atomically
+newPrice := "61000"
+_, err = client.SpotTrade().AmendOrder(
+    "BTC-USDT",
+    &orderID, nil, // identify the order to cancel: orderID or clientOrderID
+    services.SpotCancelReplaceStopOnFailure, // abort if cancel fails; or SpotCancelReplaceAllowFailure
+    services.SpotOrderRequest{
+        Side:     services.SpotSideBuy,
+        Type:     services.SpotOrderTypeLimit,
+        Quantity: "0.001",
+        Price:    &newPrice,
+    },
+)
+```
+
+If you'd rather do it manually (or need it split into two independent,
+auditable calls), the safe workflow is `CancelOrder` followed by
+`CreateOrder`/`CreateOrderRequest`, checking the cancel result before
+placing the new order.
+
+**Not implemented — spot test orders:** Unlike `Trade().CreateTestOrder`
+(Futures `POST /openApi/swap/v2/trade/order/test`), the BingX Spot API does
+not expose a dry-run order-validation endpoint. `SpotTradeService`
+therefore has no `CreateTestOrder` method; validate orders client-side via
+`CreateOrderRequest`'s built-in checks instead.
 
 ### Coin-M Perpetual Futures
 

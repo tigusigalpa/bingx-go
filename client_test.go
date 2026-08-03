@@ -23,6 +23,29 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
+func TestNewDemoClient(t *testing.T) {
+	client := NewDemoClient("demo-key", "demo-secret")
+
+	if client == nil {
+		t.Fatal("Expected demo client to be created, got nil")
+	}
+
+	const demoBaseURI = "https://open-api-vst.bingx.com"
+
+	if client.GetEndpoint() != demoBaseURI {
+		t.Errorf("Expected demo endpoint %s, got %s", demoBaseURI, client.GetEndpoint())
+	}
+
+	// All services share the same signed httpClient, so SpotTrade (and every
+	// other service) must transparently use the same demo base URI.
+	if client.SpotTrade() == nil {
+		t.Fatal("Expected SpotTrade service to be created on demo client, got nil")
+	}
+	if client.httpClient.GetEndpoint() != demoBaseURI {
+		t.Errorf("Expected SpotTrade's underlying client endpoint %s, got %s", demoBaseURI, client.httpClient.GetEndpoint())
+	}
+}
+
 func TestNewClientWithOptions(t *testing.T) {
 	apiKey := "test-api-key"
 	apiSecret := "test-api-secret"
@@ -60,6 +83,7 @@ func TestClientServices(t *testing.T) {
 		{"ListenKey", client.ListenKey()},
 		{"Wallet", client.Wallet()},
 		{"SpotAccount", client.SpotAccount()},
+		{"SpotTrade", client.SpotTrade()},
 		{"SubAccount", client.SubAccount()},
 		{"CopyTrading", client.CopyTrading()},
 		{"TradFi", client.TradFi()},
