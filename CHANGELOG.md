@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.3] - 2026-08-03
+
+### Added
+
+#### Spot Trading Support (`SpotTradeService`)
+- **New Service**: `client.SpotTrade()` for placing, cancelling, amending, and querying spot orders
+- **Order Placement**: `CreateOrder(params)` (raw) and `CreateOrderRequest(SpotOrderRequest)` (typed, validated)
+- **Cancellation**: `CancelOrder()`, `CancelAllOrders()`, `CancelBatchOrders()`
+- **Amendment**: `AmendOrder()` using BingX's native cancel-and-replace endpoint (`/openApi/spot/v1/trade/order/cancelReplace`)
+- **Queries**: `GetOrder()`, `GetOpenOrders()`, `GetOrderHistory()`, `GetTrades()`
+- **New Types**: `SpotOrderRequest` (decimal fields as strings, never `float64`)
+- **New Constants**: `SpotOrderTypeLimit/Market`, `SpotSideBuy/Sell`, `SpotTimeInForceGTC/IOC/FOK/PostOnly`, `SpotCancelReplaceStopOnFailure/AllowFailure`
+- **Demo/VST Support**: `NewDemoClient()` automatically wires `SpotTradeService` to the demo base URL via the shared HTTP client
+
+#### Not Implemented
+- `CreateTestOrder` intentionally omitted for spot: the BingX Spot API has no dry-run order-validation endpoint (unlike Futures `/openApi/swap/v2/trade/order/test`). Validate client-side via `CreateOrderRequest` instead.
+
+### Documentation
+- Added "Spot Trading - Spot Order Management" section to README.md with usage examples and a spot-vs-futures explanation
+
+### Technical Details
+- **Zero Breaking Changes**: 100% backward compatible with existing Futures, Coin-M, TradFi, Copy Trading, and Spot Account functionality
+- **New Files**: `services/spottrade.go`, `services/spottrade_test.go`
+
 ## [2.1.4] - 2026-04-23
 
 ### Added
