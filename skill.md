@@ -25,8 +25,8 @@ client := bingx.NewClient("API_KEY", "API_SECRET")
 
 // With options
 client := bingx.NewClient(apiKey, apiSecret,
-    bingx.WithBaseURI("https://open-api.bingx.com"),   // default
-    bingx.WithSignatureEncoding("hex"),                 // or "base64" (default)
+    bingx.WithBaseURI("https://open-api.bingx.com"),    // default
+    bingx.WithSignatureEncoding("hex"),                 // BingX-compatible default
     bingx.WithSourceKey("MyBot"),                       // optional tag
 )
 
@@ -36,7 +36,7 @@ client := bingx.NewDemoClient(apiKey, apiSecret)
 
 **Client options:**
 - `WithBaseURI(uri string)` — override API endpoint
-- `WithSignatureEncoding(enc string)` — `"base64"` (default) or `"hex"`
+- `WithSignatureEncoding(enc string)` — `"hex"` (BingX-compatible default) or `"base64"` (backward compatibility)
 - `WithSourceKey(key string)` — label requests for debugging
 - `WithDemoEnvironment()` — sets base URI to `https://open-api-vst.bingx.com`
 

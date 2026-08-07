@@ -1,6 +1,14 @@
 package http
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"io"
+	nethttp "net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -284,5 +292,112 @@ func TestGetAPIKey(t *testing.T) {
 
 	if client.GetAPIKey() != apiKey {
 		t.Errorf("Expected API key %s, got %s", apiKey, client.GetAPIKey())
+	}
+}
+
+const testSignatureSecret = "test-secret"
+
+// knownHexSignature is the expected HMAC-SHA256 hex signature for the
+// signing string "symbol=BTC-USDT&timestamp=1702731500000" with secret
+// "test-secret". It is used as a deterministic test vector.
+const knownHexSignature = "36f610a8da9e21e9c417413745bcca4dddad81cea81e6d66baa3ef0c2229021c"
+
+func expectedHexSignature(signingString string) string {
+	h := hmac.New(sha256.New, []byte(testSignatureSecret))
+	h.Write([]byte(signingString))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+func TestSignString_HexKnownVector(t *testing.T) {
+	client := NewBaseHTTPClient("test-key", testSignatureSecret, "https://api.test.com", "", "hex")
+	got := client.signString("symbol=BTC-USDT&timestamp=1702731500000")
+	if got != knownHexSignature {
+		t.Errorf("hex signature mismatch: got %s, want %s", got, knownHexSignature)
+	}
+	if len(got) != 64 {
+		t.Errorf("expected 64-character lowercase hex signature, got %d", len(got))
+	}
+}
+
+func TestSignString_Base64StillSupported(t *testing.T) {
+	client := NewBaseHTTPClient("test-key", testSignatureSecret, "https://api.test.com", "", "base64")
+	got := client.signString("symbol=BTC-USDT&timestamp=1702731500000")
+	if len(got) != 44 {
+		t.Errorf("expected 44-character base64 signature, got %d", len(got))
+	}
+}
+
+func TestSignString_UnknownEncodingFallsBackToHexNotBase64(t *testing.T) {
+	client := NewBaseHTTPClient("test-key", testSignatureSecret, "https://api.test.com", "", "unknown")
+	got := client.signString("test")
+	if len(got) != 64 {
+		t.Errorf("unknown encoding should produce 64-character hex, got %d: %s", len(got), got)
+	}
+}
+
+func TestSignString_EmptyEncodingDefaultsToHex(t *testing.T) {
+	client := NewBaseHTTPClient("test-key", testSignatureSecret, "https://api.test.com", "", "")
+	got := client.signString("test")
+	if len(got) != 64 {
+		t.Errorf("empty encoding should default to 64-character hex, got %d: %s", len(got), got)
+	}
+}
+
+func TestRequestSignatureIsVerifiedByServer(t *testing.T) {
+	tests := []struct {
+		name   string
+		method string
+	}{
+		{"GET", "GET"},
+		{"POST", "POST"},
+		{"DELETE", "DELETE"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var received string
+			srv := httptest.NewServer(nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
+				if tt.method == "POST" {
+					b, _ := io.ReadAll(r.Body)
+					received = string(b)
+				} else {
+					received = r.URL.RawQuery
+				}
+
+				values, err := url.ParseQuery(received)
+				if err != nil {
+					t.Fatalf("failed to parse received %s: %v", tt.method, err)
+				}
+
+				sig := values.Get("signature")
+				values.Del("signature")
+				signingString := values.Encode()
+
+				if signingString != "symbol=BTC-USDT&timestamp=1702731500000" {
+					t.Errorf("unexpected signing string: %s", signingString)
+				}
+
+				expected := expectedHexSignature(signingString)
+				if sig != expected {
+					t.Errorf("signature mismatch for %s: got %s, want %s", tt.method, sig, expected)
+				}
+				if len(sig) != 64 {
+					t.Errorf("expected 64-character hex signature for %s, got %d", tt.method, len(sig))
+				}
+
+				w.Header().Set("Content-Type", "application/json")
+				fmt.Fprint(w, `{"code":0}`)
+			}))
+			defer srv.Close()
+
+			client := NewBaseHTTPClient("test-key", testSignatureSecret, srv.URL, "", "hex")
+			_, err := client.Request(tt.method, "/test", map[string]interface{}{
+				"symbol":    "BTC-USDT",
+				"timestamp": "1702731500000",
+			})
+			if err != nil {
+				t.Fatalf("unexpected error for %s: %v", tt.method, err)
+			}
+		})
 	}
 }

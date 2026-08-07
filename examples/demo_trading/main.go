@@ -7,7 +7,8 @@ import (
 )
 
 func main() {
-	fmt.Println("=== BingX Demo Trading (VST) Example ===\n")
+	fmt.Println("=== BingX Demo Trading (VST) Example ===")
+	fmt.Println()
 
 	// Create a demo trading client
 	// This automatically uses the VST (Virtual Simulation Trading) environment
@@ -18,7 +19,8 @@ func main() {
 	)
 
 	fmt.Printf("Demo client created with endpoint: %s\n", demoClient.GetEndpoint())
-	fmt.Println("Note: This is the VST (Virtual Simulation Trading) environment\n")
+	fmt.Println("Note: This is the VST (Virtual Simulation Trading) environment")
+	fmt.Println()
 
 	// 1. Check VST status
 	fmt.Println("1. Checking VST status...")

@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.4] - 2026-08-07
+
+### Fixed
+
+#### Default HMAC Signature Encoding
+- Changed `NewClient()` and `NewDemoClient()` default `SignatureEncoding` from `"base64"` to `"hex"`.
+- BingX authenticates requests with lowercase hex HMAC-SHA256 digests; the previous base64 default caused `Signature verification failed due to signature mismatch` on authenticated endpoints.
+- `BaseHTTPClient.signString()` now defaults to hex and only produces base64 when explicitly requested, preventing silent fallback to base64 for empty or unrecognized encodings.
+
+#### Affected Authenticated Calls
+- Spot balance: `SpotAccount().GetBalance()`, `SpotAccount().GetFundBalance()`
+- Futures balance: `Account().GetBalance()`
+- All other signed endpoints share the same shared HTTP client and now send hex signatures by default.
+
+### Added
+
+#### Regression Tests
+- Deterministic HMAC-SHA256 hex test vector in `http/client_test.go`.
+- `httptest.Server` tests verifying GET, POST, and DELETE signatures match the received query/form payload.
+- Tests confirming `NewClient()` and `NewDemoClient()` use hex by default, `WithSignatureEncoding("hex")` works, and `WithSignatureEncoding("base64")` remains supported.
+
+### Documentation
+- Updated `README.md`, `skill.md`, `wiki/Getting-Started.md`, `examples/basic/main.go`, and `examples/trading/main.go` to remove base64 recommendations and document hex as the default.
+
 ## [2.2.3] - 2026-08-03
 
 ### Added

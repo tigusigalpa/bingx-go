@@ -12,7 +12,6 @@ func main() {
 		"YOUR_API_KEY",
 		"YOUR_API_SECRET",
 		bingx.WithBaseURI("https://open-api.bingx.com"),
-		bingx.WithSignatureEncoding("base64"),
 	)
 
 	price, err := client.Market().GetLatestPrice("BTC-USDT")

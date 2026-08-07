@@ -24,7 +24,8 @@ func main() {
 		bingx.WithBaseURI("https://open-api.bingx.com"),
 	)
 
-	fmt.Println("=== BingX API v3 Features Demo ===\n")
+	fmt.Println("=== BingX API v3 Features Demo ===")
+	fmt.Println()
 
 	// 1. New Order Types
 	demonstrateNewOrderTypes(client)

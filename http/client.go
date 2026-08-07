@@ -82,11 +82,14 @@ func (c *BaseHTTPClient) signString(str string) string {
 	h := hmac.New(sha256.New, []byte(c.apiSecret))
 	h.Write([]byte(str))
 
-	if c.signatureEncoding == "hex" {
-		return hex.EncodeToString(h.Sum(nil))
+	// Hex is the only encoding compatible with BingX's signature authentication.
+	// Keep base64 as an explicit backward-compatible option, but never silently
+	// fall back to base64 for empty or unrecognized encodings.
+	if c.signatureEncoding == "base64" {
+		return base64.StdEncoding.EncodeToString(h.Sum(nil))
 	}
 
-	return base64.StdEncoding.EncodeToString(h.Sum(nil))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 func (c *BaseHTTPClient) headers() map[string]string {

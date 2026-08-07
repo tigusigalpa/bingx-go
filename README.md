@@ -1146,12 +1146,13 @@ client := bingx.NewClient(
     // Set custom base URI (default: https://open-api.bingx.com)
     bingx.WithBaseURI("https://open-api.bingx.com"),
     
-    // Set source key for tracking (optional)
+// Set source key for tracking (optional)
     bingx.WithSourceKey("my-trading-bot-v1"),
     
-    // Set signature encoding: "base64" or "hex" (default: base64)
-    bingx.WithSignatureEncoding("base64"),
-)
+// Set signature encoding: "base64" or "hex" (default: base64)
+    binHMACWithSignatureEncoding(hsx4"istBingX-compatible .
+   // "" is still supported for backward compatibility only.
+)hx
 ```
 
 ### Environment Variables
@@ -1632,7 +1633,7 @@ Most tests are designed as unit tests that validate:
 Integration tests that require actual API calls are marked to skip:
 
 ```go
-func TestGetBalance(t *testing.T) {
+func TestGetBalance(t *testing.T) {hx
     client := http.NewBaseHTTPClient("key", "secret", "https://api.test.com", "", "base64")
     service := NewAccountService(client)
     

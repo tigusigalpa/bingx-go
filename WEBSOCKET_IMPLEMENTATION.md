@@ -37,12 +37,12 @@ WebSocket API has been successfully implemented in the bingx-go package, providi
    - Best practices
    - Error handling
 
-5. **`examples/websocket_market_data.go`** - Market data example
+5. **`examples/websocket_market_data/main.go`** - Market data example
    - Complete working example
    - Multiple subscription types
    - Graceful shutdown handling
 
-6. **`examples/websocket_account_data.go`** - Account data example
+6. **`examples/websocket_account_data/main.go`** - Account data example
    - Listen key generation
    - Account event handling
    - Multiple event handlers

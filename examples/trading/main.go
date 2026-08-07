@@ -11,7 +11,6 @@ func main() {
 	client := bingx.NewClient(
 		"YOUR_API_KEY",
 		"YOUR_API_SECRET",
-		bingx.WithSignatureEncoding("base64"),
 	)
 
 	order, err := client.Trade().CreateOrder(map[string]interface{}{

@@ -25,7 +25,7 @@ type Client struct {
 func NewClient(apiKey, apiSecret string, options ...ClientOption) *Client {
 	config := &ClientConfig{
 		BaseURI:           "https://open-api.bingx.com",
-		SignatureEncoding: "base64",
+		SignatureEncoding: "hex",
 	}
 
 	for _, opt := range options {
@@ -86,6 +86,9 @@ func WithSourceKey(key string) ClientOption {
 	}
 }
 
+// WithSignatureEncoding sets the HMAC signature encoding.
+// "hex" is the BingX-compatible default and should be used for production calls.
+// "base64" is supported only for backward compatibility.
 func WithSignatureEncoding(encoding string) ClientOption {
 	return func(c *ClientConfig) {
 		c.SignatureEncoding = encoding

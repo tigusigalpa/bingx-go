@@ -1,6 +1,14 @@
 package bingx
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -217,4 +225,164 @@ func TestTradFiClient(t *testing.T) {
 	if tradfi.ListenKey() == nil {
 		t.Error("TradFi ListenKey service should not be nil")
 	}
+}
+
+const testClientSecret = "test-secret"
+
+func expectedClientHexSignature(signingString string) string {
+	h := hmac.New(sha256.New, []byte(testClientSecret))
+	h.Write([]byte(signingString))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+func newSignatureTestServer(t *testing.T) (*httptest.Server, chan string) {
+	received := make(chan string, 1)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body string
+		if r.Method == "POST" {
+			b, _ := io.ReadAll(r.Body)
+			body = string(b)
+		} else {
+			body = r.URL.RawQuery
+		}
+		received <- body
+
+		values, err := url.ParseQuery(body)
+		if err != nil {
+			t.Errorf("failed to parse received query/body: %v", err)
+		} else {
+			sig := values.Get("signature")
+			values.Del("signature")
+			signingString := values.Encode()
+			expected := expectedClientHexSignature(signingString)
+			if sig != expected {
+				t.Errorf("signature mismatch: got %s, want %s", sig, expected)
+			}
+			if len(sig) != 64 {
+				t.Errorf("expected 64-character hex signature, got %d", len(sig))
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"code":0}`)
+	}))
+	return srv, received
+}
+
+func TestNewClient_UsesHexSignatureByDefault(t *testing.T) {
+	srv, received := newSignatureTestServer(t)
+	defer srv.Close()
+
+	client := NewClient("test-key", testClientSecret, WithBaseURI(srv.URL))
+	_, err := client.GetHTTPClient().Request("GET", "/test", map[string]interface{}{
+		"symbol":    "BTC-USDT",
+		"timestamp": "1702731500000",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	select {
+	case body := <-received:
+		if !hasSignature(body) {
+			t.Errorf("expected signature in request, got %s", body)
+		}
+	default:
+		t.Fatal("server did not receive a request")
+	}
+}
+
+func TestNewDemoClient_UsesHexSignatureByDefault(t *testing.T) {
+	srv, received := newSignatureTestServer(t)
+	defer srv.Close()
+
+	client := NewDemoClient("test-key", testClientSecret, WithBaseURI(srv.URL))
+	_, err := client.GetHTTPClient().Request("GET", "/test", map[string]interface{}{
+		"symbol":    "BTC-USDT",
+		"timestamp": "1702731500000",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	select {
+	case body := <-received:
+		if !hasSignature(body) {
+			t.Errorf("expected signature in request, got %s", body)
+		}
+	default:
+		t.Fatal("server did not receive a request")
+	}
+}
+
+func TestWithSignatureEncoding_HexStillWorks(t *testing.T) {
+	srv, received := newSignatureTestServer(t)
+	defer srv.Close()
+
+	client := NewClient("test-key", testClientSecret, WithBaseURI(srv.URL), WithSignatureEncoding("hex"))
+	_, err := client.GetHTTPClient().Request("GET", "/test", map[string]interface{}{
+		"symbol":    "BTC-USDT",
+		"timestamp": "1702731500000",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	select {
+	case body := <-received:
+		if !hasSignature(body) {
+			t.Errorf("expected signature in request, got %s", body)
+		}
+	default:
+		t.Fatal("server did not receive a request")
+	}
+}
+
+func TestDefaultClient_SpotAccountGetBalance_SendsHexSignature(t *testing.T) {
+	srv, received := newSignatureTestServer(t)
+	defer srv.Close()
+
+	client := NewClient("test-key", testClientSecret, WithBaseURI(srv.URL))
+	_, err := client.SpotAccount().GetBalance()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	select {
+	case body := <-received:
+		if !hasSignature(body) {
+			t.Errorf("expected signature in request, got %s", body)
+		}
+	default:
+		t.Fatal("server did not receive a request")
+	}
+}
+
+func TestDefaultClient_AccountGetBalance_SendsHexSignature(t *testing.T) {
+	srv, received := newSignatureTestServer(t)
+	defer srv.Close()
+
+	client := NewClient("test-key", testClientSecret, WithBaseURI(srv.URL))
+	_, err := client.Account().GetBalance()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	select {
+	case body := <-received:
+		if !hasSignature(body) {
+			t.Errorf("expected signature in request, got %s", body)
+		}
+	default:
+		t.Fatal("server did not receive a request")
+	}
+}
+
+func hasSignature(body string) bool {
+	values, err := url.ParseQuery(body)
+	if err != nil {
+		return false
+	}
+	sig := values.Get("signature")
+	return len(sig) == 64
 }

@@ -255,8 +255,8 @@ All WebSocket client methods are thread-safe and can be called from multiple gor
 ## Examples
 
 See the `examples/` directory for complete working examples:
-- `websocket_market_data.go` - Market data streaming example
-- `websocket_account_data.go` - Account data streaming example
+- `examples/websocket_market_data/main.go` - Market data streaming example
+- `examples/websocket_account_data/main.go` - Account data streaming example
 
 ## Notes
 
