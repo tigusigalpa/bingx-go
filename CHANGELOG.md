@@ -2,7 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.2.4] - 2026-08-07
+## [2.3.4] - 2026-08-07
+
+### Fixed
+
+#### BingX Signed REST Request Algorithm
+- Separated the **canonical signing string** from the **HTTP query/form string**.
+- Canonical signing string is now built from sorted business parameters + timestamp as raw `key=value&key=value`, never URL-encoded, and never includes `signature`.
+- `BaseHTTPClient.Request()` computes `HMAC-SHA256(apiSecret, canonicalString)` and appends `signature=<hex>` as the **last** query/body parameter.
+- GET and DELETE final URLs now have the form `?canonicalString&signature=<hex>` instead of sorting `signature` with the other parameters.
+- POST/PUT bodies are `canonicalString&signature=<hex>` with `Content-Type: application/x-www-form-urlencoded`.
+- Values that contain `[` or `{` are URL-escaped only in the actual GET/DELETE query string; the canonical signing string stays raw so the server can verify the same payload.
+- Base64 signatures remain available only through explicit `WithSignatureEncoding("base64")`.
+
+### Added
+
+#### Regression Tests
+- `http/client_signature_test.go` with `httptest.Server` tests:
+  - GET `/openApi/swap/v3/user/balance` produces `timestamp=<fixed>&signature=<hex>`.
+  - GET with `symbol=BTC-USDT` produces `symbol=BTC-USDT&timestamp=<fixed>&signature=<hex>`.
+  - POST body is `canonicalString&signature=<hex>`.
+  - Batch `orders=[...]` value is URL-encoded in the query but raw in the canonical signature.
+- `http/client_test.go` unit tests for `buildCanonicalString` and `buildSignedString` verifying sorting, raw canonical, conditional URL-encoding, and signature-last ordering.
+
+### Documentation
+- `README.md`, `skill.md`, and `wiki/Getting-Started.md` examples already use hex signatures and the corrected query ordering.
+
+## [2.3.3] - 2026-08-07
 
 ### Fixed
 

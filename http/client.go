@@ -45,37 +45,114 @@ func (c *BaseHTTPClient) timestamp() string {
 	return strconv.FormatInt(time.Now().UnixMilli(), 10)
 }
 
-func (c *BaseHTTPClient) buildQuery(params map[string]interface{}) string {
-	if len(params) == 0 {
-		return ""
-	}
-
+func (c *BaseHTTPClient) sortedKeys(params map[string]interface{}) []string {
 	keys := make([]string, 0, len(params))
 	for k := range params {
+		if k == "signature" {
+			continue
+		}
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
+	return keys
+}
 
-	values := url.Values{}
-	for _, k := range keys {
-		v := params[k]
-		switch val := v.(type) {
-		case string:
-			values.Add(k, val)
-		case int:
-			values.Add(k, strconv.Itoa(val))
-		case int64:
-			values.Add(k, strconv.FormatInt(val, 10))
-		case float64:
-			values.Add(k, strconv.FormatFloat(val, 'f', -1, 64))
-		case bool:
-			values.Add(k, strconv.FormatBool(val))
-		default:
-			values.Add(k, fmt.Sprintf("%v", val))
-		}
+func (c *BaseHTTPClient) paramValueToString(v interface{}) (string, bool) {
+	if v == nil {
+		return "", false
 	}
 
-	return values.Encode()
+	switch val := v.(type) {
+	case string:
+		return val, true
+	case *string:
+		if val == nil {
+			return "", false
+		}
+		return *val, true
+	case int:
+		return strconv.Itoa(val), true
+	case *int:
+		if val == nil {
+			return "", false
+		}
+		return strconv.Itoa(*val), true
+	case int64:
+		return strconv.FormatInt(val, 10), true
+	case *int64:
+		if val == nil {
+			return "", false
+		}
+		return strconv.FormatInt(*val, 10), true
+	case uint:
+		return strconv.FormatUint(uint64(val), 10), true
+	case uint64:
+		return strconv.FormatUint(val, 10), true
+	case float64:
+		return strconv.FormatFloat(val, 'f', -1, 64), true
+	case *float64:
+		if val == nil {
+			return "", false
+		}
+		return strconv.FormatFloat(*val, 'f', -1, 64), true
+	case bool:
+		return strconv.FormatBool(val), true
+	case *bool:
+		if val == nil {
+			return "", false
+		}
+		return strconv.FormatBool(*val), true
+	case []byte:
+		return string(val), true
+	}
+
+	// Complex values (slices, maps, structs) are serialized as JSON.
+	b, err := json.Marshal(v)
+	if err != nil {
+		return "", false
+	}
+	return string(b), true
+}
+
+// buildCanonicalString returns the raw, URL-unencoded, sorted "key=value&..."
+// string that is signed. It never includes the signature parameter.
+func (c *BaseHTTPClient) buildCanonicalString(params map[string]interface{}) string {
+	keys := c.sortedKeys(params)
+	parts := make([]string, 0, len(keys))
+
+	for _, k := range keys {
+		v, ok := c.paramValueToString(params[k])
+		if !ok {
+			continue
+		}
+		parts = append(parts, k+"="+v)
+	}
+
+	return strings.Join(parts, "&")
+}
+
+// buildSignedString builds the wire representation used in the final URL query
+// or POST body. The canonical part is sorted in the same way as the signing
+// string. Values containing '[' or '{' are URL-escaped only when forURL is true
+// (GET/DELETE query strings). The signature is always appended last and is
+// URL-escaped so legacy base64 signatures remain valid on the wire.
+func (c *BaseHTTPClient) buildSignedString(params map[string]interface{}, signature string, forURL bool) string {
+	keys := c.sortedKeys(params)
+	parts := make([]string, 0, len(keys)+1)
+
+	for _, k := range keys {
+		v, ok := c.paramValueToString(params[k])
+		if !ok {
+			continue
+		}
+		if forURL && (strings.Contains(v, "[") || strings.Contains(v, "{")) {
+			v = url.QueryEscape(v)
+		}
+		parts = append(parts, k+"="+v)
+	}
+
+	parts = append(parts, "signature="+url.QueryEscape(signature))
+	return strings.Join(parts, "&")
 }
 
 func (c *BaseHTTPClient) signString(str string) string {
@@ -142,8 +219,10 @@ func (c *BaseHTTPClient) Request(method, path string, params map[string]interfac
 		params["timestamp"] = c.timestamp()
 	}
 
-	query := c.buildQuery(params)
-	signature := c.signString(query)
+	// The canonical string is the raw, sorted, URL-unencoded "key=value&..."
+	// payload that is signed. It must never include the signature parameter.
+	canonical := c.buildCanonicalString(params)
+	signature := c.signString(canonical)
 
 	var req *http.Request
 	var err error
@@ -151,14 +230,17 @@ func (c *BaseHTTPClient) Request(method, path string, params map[string]interfac
 	fullURL := c.baseURI + path
 
 	if method == "GET" || method == "DELETE" {
-		params["signature"] = signature
-		queryWithSig := c.buildQuery(params)
-		fullURL = fullURL + "?" + queryWithSig
+		// Signature is appended last, after the canonical query. Values that
+		// contain '[' or '{' are URL-escaped in the actual query string, while
+		// the canonical signing string remains raw.
+		query := c.buildSignedString(params, signature, true)
+		fullURL = fullURL + "?" + query
 		req, err = http.NewRequest(method, fullURL, nil)
 	} else {
-		params["signature"] = signature
-		formData := c.buildQuery(params)
-		req, err = http.NewRequest(method, fullURL, bytes.NewBufferString(formData))
+		// POST/PUT bodies are form-urlencoded. The canonical string is sent as-is
+		// (raw) followed by the signature.
+		body := c.buildSignedString(params, signature, false)
+		req, err = http.NewRequest(method, fullURL, bytes.NewBufferString(body))
 	}
 
 	if err != nil {

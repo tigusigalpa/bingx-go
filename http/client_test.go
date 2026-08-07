@@ -9,6 +9,7 @@ import (
 	nethttp "net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -59,73 +60,122 @@ func TestTimestamp(t *testing.T) {
 	}
 }
 
-func TestBuildQuery(t *testing.T) {
-	client := NewBaseHTTPClient("key", "secret", "https://api.test.com", "", "base64")
+func TestBuildCanonicalString(t *testing.T) {
+	client := NewBaseHTTPClient("key", "secret", "https://api.test.com", "", "hex")
 
 	tests := []struct {
 		name     string
 		params   map[string]interface{}
-		contains []string
+		expected string
 	}{
 		{
 			name:     "Empty params",
 			params:   map[string]interface{}{},
-			contains: []string{},
+			expected: "",
 		},
 		{
 			name: "String param",
 			params: map[string]interface{}{
 				"symbol": "BTC-USDT",
 			},
-			contains: []string{"symbol=BTC-USDT"},
+			expected: "symbol=BTC-USDT",
 		},
 		{
 			name: "Int param",
 			params: map[string]interface{}{
 				"limit": 100,
 			},
-			contains: []string{"limit=100"},
+			expected: "limit=100",
 		},
 		{
 			name: "Float param",
 			params: map[string]interface{}{
 				"price": 50000.5,
 			},
-			contains: []string{"price=50000.5"},
+			expected: "price=50000.5",
 		},
 		{
 			name: "Bool param",
 			params: map[string]interface{}{
 				"test": true,
 			},
-			contains: []string{"test=true"},
+			expected: "test=true",
 		},
 		{
-			name: "Multiple params",
+			name: "Multiple params are sorted",
 			params: map[string]interface{}{
 				"symbol": "BTC-USDT",
 				"limit":  100,
 			},
-			contains: []string{"symbol=BTC-USDT", "limit=100"},
+			expected: "limit=100&symbol=BTC-USDT",
+		},
+		{
+			name: "JSON-like value is not URL-encoded in canonical",
+			params: map[string]interface{}{
+				"orders":    `[{"symbol":"BTC-USDT"}]`,
+				"timestamp": "1702731500000",
+			},
+			expected: `orders=[{"symbol":"BTC-USDT"}]&timestamp=1702731500000`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			query := client.buildQuery(tt.params)
+			got := client.buildCanonicalString(tt.params)
 
-			if len(tt.params) == 0 && query != "" {
-				t.Errorf("Expected empty query, got %s", query)
-			}
-
-			for _, expected := range tt.contains {
-				if query == "" {
-					t.Errorf("Expected query to contain %s, got empty string", expected)
-					continue
-				}
+			if got != tt.expected {
+				t.Errorf("buildCanonicalString() = %q, want %q", got, tt.expected)
 			}
 		})
 	}
+}
+
+func TestBuildSignedString(t *testing.T) {
+	client := NewBaseHTTPClient("key", testSignatureSecret, "https://api.test.com", "", "hex")
+
+	t.Run("GET query encodes values with [ or {", func(t *testing.T) {
+		params := map[string]interface{}{
+			"orders":    `[{"symbol":"BTC-USDT"}]`,
+			"timestamp": "1702731500000",
+		}
+		canonical := `orders=[{"symbol":"BTC-USDT"}]&timestamp=1702731500000`
+		sig := expectedHexSignature(canonical)
+
+		got := client.buildSignedString(params, sig, true)
+		want := `orders=%5B%7B%22symbol%22%3A%22BTC-USDT%22%7D%5D&timestamp=1702731500000&signature=` + sig
+		if got != want {
+			t.Errorf("buildSignedString() = %q, want %q", got, want)
+		}
+	})
+
+	t.Run("POST body keeps values raw", func(t *testing.T) {
+		params := map[string]interface{}{
+			"orders":    `[{"symbol":"BTC-USDT"}]`,
+			"timestamp": "1702731500000",
+		}
+		canonical := `orders=[{"symbol":"BTC-USDT"}]&timestamp=1702731500000`
+		sig := expectedHexSignature(canonical)
+
+		got := client.buildSignedString(params, sig, false)
+		want := `orders=[{"symbol":"BTC-USDT"}]&timestamp=1702731500000&signature=` + sig
+		if got != want {
+			t.Errorf("buildSignedString() = %q, want %q", got, want)
+		}
+	})
+
+	t.Run("signature is always appended last", func(t *testing.T) {
+		params := map[string]interface{}{
+			"symbol":    "BTC-USDT",
+			"timestamp": "1702731500000",
+		}
+		canonical := "symbol=BTC-USDT&timestamp=1702731500000"
+		sig := expectedHexSignature(canonical)
+
+		got := client.buildSignedString(params, sig, true)
+		if !strings.HasSuffix(got, "&signature="+sig) {
+			t.Errorf("signature is not last in %q", got)
+		}
+	})
 }
 
 func TestSignString(t *testing.T) {

@@ -1,8 +1,8 @@
-# Release Notes v2.2.4 - Fix Default Signature Encoding to Hex
+# Release Notes v2.3.3 - Fix Default Signature Encoding to Hex
 
 **Release Date:** August 7, 2026
 
-This patch release fixes the default HMAC signature encoding used by `NewClient()` and `NewDemoClient()`. The SDK previously defaulted to `base64`, which caused authenticated BingX requests to fail with `Signature verification failed due to signature mismatch`. BingX expects the HMAC-SHA256 digest as a lowercase hexadecimal string.
+This release fixes the default HMAC signature encoding used by `NewClient()` and `NewDemoClient()`. The SDK previously defaulted to `base64`, which caused authenticated BingX requests to fail with `Signature verification failed due to signature mismatch`. BingX expects the HMAC-SHA256 digest as a lowercase hexadecimal string.
 
 ---
 
@@ -71,4 +71,4 @@ No code changes are required for most users.
 
 ---
 
-**Full Changelog**: https://github.com/tigusigalpa/bingx-go/compare/v2.2.3...v2.2.4
+**Full Changelog**: https://github.com/tigusigalpa/bingx-go/compare/v2.3.2...v2.3.3
