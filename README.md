@@ -528,8 +528,15 @@ import "github.com/tigusigalpa/bingx-go/v2/services"
 // Get spot balance
 balance, err := client.SpotAccount().GetBalance()
 
+// Get a combined overview of all wallet types.
+// Use AccountType* constants to filter by a single wallet, or pass nil for all.
+overview, err := client.SpotAccount().GetAccountOverview(nil)
+
+// Query only the USDT-M perpetual wallet
+usdtOverview, err := client.SpotAccount().GetAccountOverview(&services.AccountTypeUSDTMPerp)
+
 // Internal transfer with wallet type constants
-// Wallet types: WalletTypeFund=1, WalletTypeStandardFutures=2, 
+// Wallet types: WalletTypeFund=1, WalletTypeStandardFutures=2,
 //               WalletTypePerpetualFutures=3, WalletTypeSpot=4
 userAccountType := 1 // 1=UID, 2=Phone, 3=Email
 userAccount := "123456"
@@ -544,8 +551,24 @@ transfer, err := client.SpotAccount().InternalTransfer(
     nil,                              // recvWindow
 )
 
-// Get all account balances
+// Get all spot account balances
 allBalances, err := client.SpotAccount().GetAllAccountBalances()
+
+// Deprecated: GetFundBalance is retired and no longer calls the API.
+// Use GetAccountOverview instead.
+```
+
+**Supported account types** for `GetAccountOverview`:
+
+```go
+services.AccountTypeSpotFund     // "sopt"
+services.AccountTypeStdFutures   // "stdFutures"
+services.AccountTypeCoinMPerp    // "coinMPerp"
+services.AccountTypeUSDTMPerp    // "USDTMPerp"
+services.AccountTypeCopyTrading  // "copyTrading"
+services.AccountTypeGrid         // "grid"
+services.AccountTypeWealth       // "eran"
+services.AccountTypeC2C          // "c2c"
 ```
 
 ### Spot Trading - Spot Order Management

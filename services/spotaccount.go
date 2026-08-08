@@ -1,6 +1,10 @@
 package services
 
-import "github.com/tigusigalpa/bingx-go/v2/http"
+import (
+	"errors"
+
+	"github.com/tigusigalpa/bingx-go/v2/http"
+)
 
 // Wallet type constants for internal transfers
 const (
@@ -8,6 +12,18 @@ const (
 	WalletTypeStandardFutures  = 2 // Standard Futures Account
 	WalletTypePerpetualFutures = 3 // Perpetual Futures Account
 	WalletTypeSpot             = 4 // Spot Account
+)
+
+// Account type constants for SpotAccountService.GetAccountOverview.
+const (
+	AccountTypeSpotFund    = "sopt"
+	AccountTypeStdFutures  = "stdFutures"
+	AccountTypeCoinMPerp   = "coinMPerp"
+	AccountTypeUSDTMPerp   = "USDTMPerp"
+	AccountTypeCopyTrading = "copyTrading"
+	AccountTypeGrid        = "grid"
+	AccountTypeWealth      = "eran"
+	AccountTypeC2C         = "c2c"
 )
 
 type SpotAccountService struct {
@@ -22,8 +38,27 @@ func (s *SpotAccountService) GetBalance() (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/spot/v1/account/balance", nil)
 }
 
+// GetAccountOverview returns a cross-wallet overview for the specified
+// account type, or all account types when accountType is nil.
+//
+// Use the AccountType* constants (AccountTypeSpotFund, AccountTypeUSDTMPerp,
+// etc.) for the accountType parameter.
+func (s *SpotAccountService) GetAccountOverview(accountType *string) (map[string]interface{}, error) {
+	params := map[string]interface{}{}
+	if accountType != nil {
+		params["accountType"] = *accountType
+	}
+
+	return s.client.Request("GET", "/openApi/account/v1/allAccountBalance", params)
+}
+
+// GetFundBalance is retired.
+//
+// Deprecated: BingX removed /openApi/wallets/v1/capital/fundBalance. Use
+// GetAccountOverview instead. This method no longer makes an HTTP request and
+// will be removed in a future major release.
 func (s *SpotAccountService) GetFundBalance() (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/wallets/v1/capital/fundBalance", nil)
+	return nil, errors.New("GetFundBalance is retired; use GetAccountOverview instead")
 }
 
 func (s *SpotAccountService) UniversalTransfer(transferType, asset string, amount float64) (map[string]interface{}, error) {

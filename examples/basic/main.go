@@ -5,6 +5,7 @@ import (
 	"log"
 
 	bingx "github.com/tigusigalpa/bingx-go/v2"
+	"github.com/tigusigalpa/bingx-go/v2/services"
 )
 
 func main() {
@@ -27,6 +28,21 @@ func main() {
 	}
 
 	fmt.Printf("Account Balance: %v\n", balance)
+
+	// Get an overview of all wallet types (spot, standard futures, USDT-M, etc.)
+	overview, err := client.SpotAccount().GetAccountOverview(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("All Account Overview: %v\n", overview)
+
+	// Get only the USDT-M perpetual wallet overview
+	usdtM := services.AccountTypeUSDTMPerp
+	usdtOverview, err := client.SpotAccount().GetAccountOverview(&usdtM)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("USDT-M Perp Overview: %v\n", usdtOverview)
 
 	symbols, err := client.Market().GetFuturesSymbols()
 	if err != nil {

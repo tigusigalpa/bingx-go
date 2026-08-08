@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.5] - 2026-08-08
+
+### Fixed
+
+#### Spot Account Wallet Overview
+- Removed the retired BingX endpoint `/openApi/wallets/v1/capital/fundBalance` from `GetFundBalance()`.
+- `GetFundBalance()` is now marked `Deprecated` and returns a local error: `GetFundBalance is retired; use GetAccountOverview instead`.
+- Added `SpotAccountService.GetAccountOverview(accountType *string)` calling the active read-only endpoint `GET /openApi/account/v1/allAccountBalance`.
+- `accountType` is optional; when `nil` the API returns all wallet types.
+- Added `AccountType*` string constants for the supported account types: `AccountTypeSpotFund`, `AccountTypeStdFutures`, `AccountTypeCoinMPerp`, `AccountTypeUSDTMPerp`, `AccountTypeCopyTrading`, `AccountTypeGrid`, `AccountTypeWealth`, `AccountTypeC2C`.
+
+### Added
+
+#### Regression Tests
+- `services/spotaccount_test.go` with `httptest.Server` tests:
+  - `GetAccountOverview(nil)` calls `/openApi/account/v1/allAccountBalance` with signature computed from the raw canonical query string and placed last.
+  - `GetAccountOverview(&AccountTypeUSDTMPerp)` passes `accountType=USDTMPerp` and verifies the signature.
+  - `GetFundBalance()` returns a retirement error without making an HTTP call.
+
+### Documentation
+- Updated `README.md` Spot Account Service section to recommend `GetAccountOverview` and document `AccountType*` constants.
+- Updated `examples/basic/main.go` and `examples/v3_features/main.go` to demonstrate `GetAccountOverview` for all wallets and a specific wallet type.
+
 ## [2.3.4] - 2026-08-07
 
 ### Fixed

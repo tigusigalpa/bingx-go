@@ -246,6 +246,23 @@ func demonstrateAccountFeatures(client *bingx.Client) {
 
 	symbol := "BTC-USDT"
 
+	// Get an overview of all wallets (spot, fund, standard futures, USDT-M, etc.)
+	overview, err := client.SpotAccount().GetAccountOverview(nil)
+	if err != nil {
+		fmt.Printf("  Error getting account overview: %v\n", err)
+	} else {
+		fmt.Printf("  All account overview: %+v\n", overview)
+	}
+
+	// Get only the standard futures wallet overview
+	std := services.AccountTypeStdFutures
+	stdOverview, err := client.SpotAccount().GetAccountOverview(&std)
+	if err != nil {
+		fmt.Printf("  Error getting standard futures overview: %v\n", err)
+	} else {
+		fmt.Printf("  Standard futures overview: %+v\n", stdOverview)
+	}
+
 	// Get income history
 	incomeType := "REALIZED_PNL"
 	income, err := client.Account().GetIncomeHistory(
