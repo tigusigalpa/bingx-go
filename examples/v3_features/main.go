@@ -206,11 +206,12 @@ func demonstrateMarketData(client *bingx.Client) {
 	}
 
 	// Get book ticker (best bid/ask)
-	bookTicker, err := client.Market().GetBookTicker(&symbol)
+	bookTicker, err := client.Market().GetBookTickerData(&symbol)
 	if err != nil {
 		fmt.Printf("  Error getting book ticker: %v\n", err)
 	} else {
-		fmt.Printf("  Book ticker: %+v\n", bookTicker)
+		fmt.Printf("  Best bid: %s\n", bookTicker.BidPrice)
+		fmt.Printf("  Best ask: %s\n", bookTicker.AskPrice)
 	}
 
 	// Get index price

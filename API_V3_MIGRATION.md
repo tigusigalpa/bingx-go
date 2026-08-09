@@ -146,8 +146,13 @@ oiHistory, err := client.Market().GetOpenInterestHistory(
 // Get funding rate info
 fundingInfo, err := client.Market().GetFundingRateInfo("BTC-USDT")
 
-// Get best bid/ask (book ticker)
-bookTicker, err := client.Market().GetBookTicker(&symbol)
+// Get best bid/ask (book ticker). The typed helper unwraps data.book_ticker.
+ticker, err := client.Market().GetBookTickerData(&symbol)
+if err != nil {
+    return err
+}
+fmt.Println("Best bid:", ticker.BidPrice)
+fmt.Println("Best ask:", ticker.AskPrice)
 
 // Get index price
 indexPrice, err := client.Market().GetIndexPrice("BTC-USDT")

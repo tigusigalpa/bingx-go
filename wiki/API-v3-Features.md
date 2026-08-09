@@ -470,12 +470,16 @@ Need the top of the order book without fetching the whole thing? Book ticker is 
 
 ```go
 symbol := "BTC-USDT"
-bookTicker, err := client.Market().GetBookTicker(&symbol)
+ticker, err := client.Market().GetBookTickerData(&symbol)
+if err != nil {
+    return err
+}
 
-fmt.Printf("Best bid: %v @ %v\n", bookTicker["bidQty"], bookTicker["bidPrice"])
-fmt.Printf("Best ask: %v @ %v\n", bookTicker["askQty"], bookTicker["askPrice"])
+fmt.Println("Best bid:", ticker.BidPrice)
+fmt.Println("Best ask:", ticker.AskPrice)
 
-// Spread = ask - bid (tighter is better)
+// GetBookTicker remains available when you need the raw BingX envelope.
+// The current futures payload is nested at data.book_ticker with bid_price and ask_price.
 ```
 
 ### Index & Mark Price

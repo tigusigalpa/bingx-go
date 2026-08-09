@@ -1,0 +1,15 @@
+{
+  "code": 0,
+  "msg": "",
+  "data": {
+    "book_ticker": {
+      "symbol": "ETH-USDT",
+      "bid_price": 1916.79,
+      "bid_qty": 657.08,
+      "ask_price": 1916.8,
+      "ask_qty": 393.12,
+      "lastUpdateId": 533536907,
+      "time": 1786280077438
+    }
+  }
+}

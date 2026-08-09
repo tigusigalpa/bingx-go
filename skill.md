@@ -81,8 +81,10 @@ client.Market().GetTickerPrice(&sym)                // ticker price (v3)
 ### Order Book
 ```go
 client.Market().GetDepth("BTC-USDT", 20)            // depth levels (5/10/20/50/100/500/1000)
-client.Market().GetBookTicker(&sym)                  // best bid/ask (v3)
-client.Market().GetSpotBookTicker(&sym)              // spot best bid/ask (v3)
+client.Market().GetBookTicker(&sym)                  // raw futures response envelope
+client.Market().GetBookTickerData(&sym)              // typed futures best bid/ask
+client.Market().GetSpotBookTicker(&sym)              // raw spot response envelope
+client.Market().GetSpotBookTickerData(&sym)          // typed spot best bid/ask
 ```
 
 ### Klines / Candlesticks
@@ -700,7 +702,7 @@ for _, pos := range positions {
 | Liquidation History | `Account().GetForceOrders()` |
 | Open Interest | `Market().GetOpenInterest()` / `GetOpenInterestHistory()` |
 | Funding Rate Info | `Market().GetFundingRateInfo()` |
-| Book Ticker | `Market().GetBookTicker()` / `GetSpotBookTicker()` |
+| Book Ticker | `Market().GetBookTickerData()` / `GetSpotBookTickerData()` (typed); raw methods remain available |
 | Index / Ticker Price | `Market().GetIndexPrice()` / `GetTickerPrice()` |
 | Long/Short Ratio | `Market().GetLongShortRatio()` |
 | Aggregate Trades | `Market().GetAggregateTrades()` |

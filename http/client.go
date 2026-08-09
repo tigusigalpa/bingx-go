@@ -209,6 +209,33 @@ func (c *BaseHTTPClient) handleAPIError(response map[string]interface{}) error {
 }
 
 func (c *BaseHTTPClient) Request(method, path string, params map[string]interface{}) (map[string]interface{}, error) {
+	body, err := c.requestBody(method, path, params)
+	if err != nil {
+		return nil, err
+	}
+
+	var data map[string]interface{}
+	if err := json.Unmarshal(body, &data); err != nil {
+		return nil, errors.NewBingXException("Invalid JSON response from API", 0, map[string]interface{}{"raw": string(body)})
+	}
+
+	return data, nil
+}
+
+func (c *BaseHTTPClient) RequestJSON(method, path string, params map[string]interface{}, result interface{}) error {
+	body, err := c.requestBody(method, path, params)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(body, result); err != nil {
+		return errors.NewBingXException("Invalid JSON response from API", 0, map[string]interface{}{"raw": string(body)})
+	}
+
+	return nil
+}
+
+func (c *BaseHTTPClient) requestBody(method, path string, params map[string]interface{}) ([]byte, error) {
 	method = strings.ToUpper(method)
 
 	if params == nil {
@@ -271,7 +298,7 @@ func (c *BaseHTTPClient) Request(method, path string, params map[string]interfac
 		return nil, err
 	}
 
-	return data, nil
+	return body, nil
 }
 
 func (c *BaseHTTPClient) GetEndpoint() string {

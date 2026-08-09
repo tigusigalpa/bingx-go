@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.6] - 2026-08-09
+
+### Added
+
+#### Typed Book Tickers
+- Added `Market().GetBookTickerData(*string) (*BookTicker, error)` for the current futures response nested at `data.book_ticker`.
+- Prices and quantities are preserved as decimal strings, including JSON number tokens and string numeric fields.
+- Added `Market().GetSpotBookTickerData(*string) (*SpotBookTicker, error)` for the verified spot `data` array payload with `bidVolume` and `askVolume` fields.
+- The existing `GetBookTicker()` and `GetSpotBookTicker()` raw methods are unchanged.
+
+### Documentation
+- Updated README, wiki, migration guide, skill reference, and v3 example to recommend the typed futures helper and document the raw envelope.
+
+### Tests
+- Added fixture-based coverage for futures payload decoding, exact decimal preservation, malformed envelopes, API errors, the spot payload, and legacy raw response behavior.
+
 ## [2.3.5] - 2026-08-08
 
 ### Fixed

@@ -362,8 +362,19 @@ oiHistory, err := client.Market().GetOpenInterestHistory("BTC-USDT", "5m", 100, 
 fundingInfo, err := client.Market().GetFundingRateInfo("BTC-USDT")
 
 // Book Ticker (Best Bid/Ask)
-bookTicker, err := client.Market().GetBookTicker(&symbol)
-spotBookTicker, err := client.Market().GetSpotBookTicker(&symbol)
+// GetBookTicker returns the raw BingX futures response envelope.
+rawBookTicker, err := client.Market().GetBookTicker(&symbol)
+
+// GetBookTickerData is recommended for the current v3 futures payload.
+ticker, err := client.Market().GetBookTickerData(&symbol)
+if err != nil {
+    return err
+}
+fmt.Println("Best bid:", ticker.BidPrice)
+fmt.Println("Best ask:", ticker.AskPrice)
+
+// Spot uses a distinct array payload with bidVolume and askVolume fields.
+spotTicker, err := client.Market().GetSpotBookTickerData(&symbol)
 
 // Index Price
 indexPrice, err := client.Market().GetIndexPrice("BTC-USDT")
@@ -1139,8 +1150,13 @@ oi, _ := client.Market().GetOpenInterest("BTC-USDT")
 // Historical open interest
 oiHistory, _ := client.Market().GetOpenInterestHistory("BTC-USDT", "5m", 100, nil, nil)
 
-// Best bid/ask prices
-bookTicker, _ := client.Market().GetBookTicker(&symbol)
+// Best bid/ask prices. GetBookTickerData is the recommended typed helper.
+ticker, err := client.Market().GetBookTickerData(&symbol)
+if err != nil {
+    return err
+}
+fmt.Println("Best bid:", ticker.BidPrice)
+fmt.Println("Best ask:", ticker.AskPrice)
 ```
 
 ### 📊 v3 Statistics

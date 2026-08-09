@@ -118,25 +118,41 @@ for _, ask := range depth["asks"].([]interface{}) {
 
 ### Just the Top of Book *(v3)*
 
-If you only need the best bid and ask (faster than fetching the whole book):
+If you only need the best bid and ask (faster than fetching the whole book), use the typed helper:
 
 ```go
-symbol := "BTC-USDT"
-bookTicker, err := client.Market().GetBookTicker(&symbol)
+symbol := "ETH-USDT"
 
-fmt.Printf("Best bid: %v @ %v\n", bookTicker["bidQty"], bookTicker["bidPrice"])
-fmt.Printf("Best ask: %v @ %v\n", bookTicker["askQty"], bookTicker["askPrice"])
+ticker, err := client.Market().GetBookTickerData(&symbol)
+if err != nil {
+    return err
+}
 
-// The spread tells you about liquidity
-spread := bookTicker["askPrice"].(float64) - bookTicker["bidPrice"].(float64)
-fmt.Printf("Spread: %.2f\n", spread)
+fmt.Println("Best bid:", ticker.BidPrice)
+fmt.Println("Best ask:", ticker.AskPrice)
 ```
 
-### Spot Book Ticker *(v3)*
+`GetBookTickerData()` is recommended for the current futures response. It unwraps
+`data.book_ticker`, whose price fields are `bid_price` and `ask_price`, and preserves
+prices and quantities as decimal strings. `GetBookTicker()` remains available and returns
+the untouched raw BingX response envelope for consumers that need it.
+
+### Spot Book Ticker
+
+The spot endpoint uses a different payload: `data` is an array and its quantities are
+named `bidVolume` and `askVolume`. Use its separately typed helper:
 
 ```go
-spotBookTicker, err := client.Market().GetSpotBookTicker(&symbol)
+spotTicker, err := client.Market().GetSpotBookTickerData(&symbol)
+if err != nil {
+    return err
+}
+
+fmt.Println("Best spot bid:", spotTicker.BidPrice)
+fmt.Println("Best spot ask:", spotTicker.AskPrice)
 ```
+
+`GetSpotBookTicker()` remains available and returns its raw response envelope.
 
 ---
 
