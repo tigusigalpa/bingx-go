@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![BingX Golang SDK](https://i.postimg.cc/htbVV4yh/528052139-61babf48-746f-469e-aeed-5058a9337d86.jpg)
+![BingX Golang SDK](https://i.postimg.cc/DZj1bTwx/bingx-go-github.jpg)
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
