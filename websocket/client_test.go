@@ -1,9 +1,14 @@
 package websocket
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 // TestSend_DoesNotHoldStateLock_WhileWriting is a regression guard for #4.
@@ -65,5 +70,49 @@ func TestSend_ConcurrentCallers_NoDeadlock(t *testing.T) {
 	case <-done:
 	case <-time.After(2 * time.Second):
 		t.Fatal("concurrent Send callers deadlocked")
+	}
+}
+
+func TestDisconnectIsIdempotent(t *testing.T) {
+	c := NewWebSocketClient("ws://invalid.local")
+	if err := c.Disconnect(); err != nil {
+		t.Fatalf("first disconnect returned error: %v", err)
+	}
+	if err := c.Disconnect(); err != nil {
+		t.Fatalf("second disconnect returned error: %v", err)
+	}
+}
+
+func TestClientReconnectsAfterDisconnect(t *testing.T) {
+	upgrader := websocket.Upgrader{}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		for {
+			if _, _, err := conn.ReadMessage(); err != nil {
+				return
+			}
+		}
+	}))
+	defer srv.Close()
+
+	c := NewWebSocketClient("ws" + strings.TrimPrefix(srv.URL, "http"))
+	if err := c.Connect(); err != nil {
+		t.Fatalf("first connect returned error: %v", err)
+	}
+	if err := c.Disconnect(); err != nil {
+		t.Fatalf("disconnect returned error: %v", err)
+	}
+	if err := c.Connect(); err != nil {
+		t.Fatalf("reconnect returned error: %v", err)
+	}
+	if !c.IsConnected() {
+		t.Fatal("client is not connected after reconnect")
+	}
+	if err := c.Disconnect(); err != nil {
+		t.Fatalf("final disconnect returned error: %v", err)
 	}
 }

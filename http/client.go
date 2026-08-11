@@ -238,17 +238,21 @@ func (c *BaseHTTPClient) RequestJSON(method, path string, params map[string]inte
 func (c *BaseHTTPClient) requestBody(method, path string, params map[string]interface{}) ([]byte, error) {
 	method = strings.ToUpper(method)
 
-	if params == nil {
-		params = make(map[string]interface{})
+	// Do not add the generated timestamp to the caller's map. Reusing a map
+	// across requests should produce a fresh timestamp and must not cause a
+	// surprising mutation outside the client.
+	requestParams := make(map[string]interface{}, len(params)+1)
+	for key, value := range params {
+		requestParams[key] = value
 	}
 
-	if _, exists := params["timestamp"]; !exists {
-		params["timestamp"] = c.timestamp()
+	if _, exists := requestParams["timestamp"]; !exists {
+		requestParams["timestamp"] = c.timestamp()
 	}
 
 	// The canonical string is the raw, sorted, URL-unencoded "key=value&..."
 	// payload that is signed. It must never include the signature parameter.
-	canonical := c.buildCanonicalString(params)
+	canonical := c.buildCanonicalString(requestParams)
 	signature := c.signString(canonical)
 
 	var req *http.Request
@@ -260,13 +264,13 @@ func (c *BaseHTTPClient) requestBody(method, path string, params map[string]inte
 		// Signature is appended last, after the canonical query. Values that
 		// contain '[' or '{' are URL-escaped in the actual query string, while
 		// the canonical signing string remains raw.
-		query := c.buildSignedString(params, signature, true)
+		query := c.buildSignedString(requestParams, signature, true)
 		fullURL = fullURL + "?" + query
 		req, err = http.NewRequest(method, fullURL, nil)
 	} else {
 		// POST/PUT bodies are form-urlencoded. The canonical string is sent as-is
 		// (raw) followed by the signature.
-		body := c.buildSignedString(params, signature, false)
+		body := c.buildSignedString(requestParams, signature, false)
 		req, err = http.NewRequest(method, fullURL, bytes.NewBufferString(body))
 	}
 
@@ -296,6 +300,14 @@ func (c *BaseHTTPClient) requestBody(method, path string, params map[string]inte
 
 	if err := c.handleAPIError(data); err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return nil, errors.NewBingXException(
+			fmt.Sprintf("HTTP request failed with status %s", resp.Status),
+			resp.StatusCode,
+			data,
+		)
 	}
 
 	return body, nil

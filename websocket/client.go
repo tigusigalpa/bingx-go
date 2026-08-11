@@ -38,6 +38,9 @@ func NewWebSocketClient(url string) *WebSocketClient {
 func (c *WebSocketClient) Connect() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	if c.conn != nil {
+		return nil
+	}
 
 	dialer := websocket.Dialer{
 		HandshakeTimeout: 60 * time.Second,
@@ -49,6 +52,13 @@ func (c *WebSocketClient) Connect() error {
 	}
 
 	c.conn = conn
+	// Disconnect closes done to wake a listener. A fresh connection needs a
+	// fresh signal channel so the client can be reused.
+	select {
+	case <-c.done:
+		c.done = make(chan struct{})
+	default:
+	}
 	return nil
 }
 
@@ -57,7 +67,12 @@ func (c *WebSocketClient) Disconnect() error {
 	defer c.mu.Unlock()
 
 	c.running = false
-	close(c.done)
+	select {
+	case <-c.done:
+		// Disconnect is intentionally idempotent.
+	default:
+		close(c.done)
+	}
 
 	if c.conn != nil {
 		err := c.conn.Close()
@@ -119,14 +134,16 @@ func (c *WebSocketClient) Listen() error {
 		return fmt.Errorf("WebSocket client is not connected")
 	}
 	c.running = true
+	conn := c.conn
+	done := c.done
 	c.mu.Unlock()
 
 	for c.isRunning() {
 		select {
-		case <-c.done:
+		case <-done:
 			return nil
 		default:
-			messageType, message, err := c.conn.ReadMessage()
+			messageType, message, err := conn.ReadMessage()
 			if err != nil {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 					return fmt.Errorf("WebSocket connection closed unexpectedly: %w", err)

@@ -191,3 +191,34 @@ func TestRequestGET_BatchParamValueIsURLEncodedInQueryButRawInSignature(t *testi
 		t.Errorf("raw query does not contain URL-encoded orders value: %s", rawQuery)
 	}
 }
+
+func TestRequestDoesNotMutateParams(t *testing.T) {
+	params := map[string]interface{}{"symbol": "BTC-USDT"}
+	srv := httptest.NewServer(nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"code":0}`))
+	}))
+	defer srv.Close()
+
+	client := NewBaseHTTPClient("test-key", testSignatureSecret, srv.URL, "", "hex")
+	if _, err := client.Request("GET", "/test", params); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := params["timestamp"]; ok {
+		t.Fatal("Request must not add timestamp to the caller's params")
+	}
+}
+
+func TestRequestReturnsErrorForHTTPFailureWithoutAPICode(t *testing.T) {
+	srv := httptest.NewServer(nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(nethttp.StatusInternalServerError)
+		w.Write([]byte(`{"message":"temporary failure"}`))
+	}))
+	defer srv.Close()
+
+	client := NewBaseHTTPClient("test-key", testSignatureSecret, srv.URL, "", "hex")
+	if _, err := client.Request("GET", "/test", nil); err == nil {
+		t.Fatal("expected an error for an HTTP 500 response")
+	}
+}

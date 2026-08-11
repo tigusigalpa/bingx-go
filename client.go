@@ -1,6 +1,8 @@
 package bingx
 
 import (
+	"sync"
+
 	"github.com/tigusigalpa/bingx-go/v2/http"
 	"github.com/tigusigalpa/bingx-go/v2/services"
 	"github.com/tigusigalpa/bingx-go/v2/websocket"
@@ -20,6 +22,7 @@ type Client struct {
 	copyTrading  *services.CopyTradingService
 	coinMClient  *CoinMClient
 	tradfiClient *TradFiClient
+	lazyMu       sync.Mutex
 }
 
 func NewClient(apiKey, apiSecret string, options ...ClientOption) *Client {
@@ -143,6 +146,8 @@ func (c *Client) CopyTrading() *services.CopyTradingService {
 }
 
 func (c *Client) CoinM() *CoinMClient {
+	c.lazyMu.Lock()
+	defer c.lazyMu.Unlock()
 	if c.coinMClient == nil {
 		c.coinMClient = NewCoinMClient(c.httpClient)
 	}
@@ -151,6 +156,8 @@ func (c *Client) CoinM() *CoinMClient {
 
 // TradFi returns the TradFi client for Traditional Finance instruments (stocks, forex, commodities, indices).
 func (c *Client) TradFi() *TradFiClient {
+	c.lazyMu.Lock()
+	defer c.lazyMu.Unlock()
 	if c.tradfiClient == nil {
 		c.tradfiClient = NewTradFiClient(c.httpClient)
 	}

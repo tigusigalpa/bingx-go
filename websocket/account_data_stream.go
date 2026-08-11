@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"fmt"
+	"net/url"
 )
 
 // AccountDataStreamBaseURL is the WebSocket endpoint for account data streams (v3 compatible)
@@ -12,9 +13,9 @@ type AccountDataStream struct {
 }
 
 func NewAccountDataStream(listenKey string) *AccountDataStream {
-	url := fmt.Sprintf("%s?listenKey=%s", AccountDataStreamBaseURL, listenKey)
+	endpoint := fmt.Sprintf("%s?listenKey=%s", AccountDataStreamBaseURL, url.QueryEscape(listenKey))
 	return &AccountDataStream{
-		WebSocketClient: NewWebSocketClient(url),
+		WebSocketClient: NewWebSocketClient(endpoint),
 	}
 }
 
