@@ -203,7 +203,7 @@ func TestCancelOrder_ByOrderID(t *testing.T) {
 		body, _ := readAll(r)
 		gotBody = body
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"symbol":"BTC-USDT","orderId":123,"status":"CANCELED"}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"symbol":"BTC-USDT","orderId":123,"status":"CANCELED"}}`)
 	})
 	defer srv.Close()
 
@@ -223,7 +223,7 @@ func TestCancelOrder_ByClientOrderID(t *testing.T) {
 		body, _ := readAll(r)
 		gotBody = body
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"symbol":"BTC-USDT","clientOrderID":"my-id","status":"CANCELED"}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"symbol":"BTC-USDT","clientOrderID":"my-id","status":"CANCELED"}}`)
 	})
 	defer srv.Close()
 
@@ -256,7 +256,7 @@ func TestCancelAllOrders(t *testing.T) {
 		body, _ := readAll(r)
 		gotBody = body
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"orders":[]}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"orders":[]}}`)
 	})
 	defer srv.Close()
 
@@ -279,7 +279,7 @@ func TestCancelAllOrders_NilSymbol(t *testing.T) {
 		body, _ := readAll(r)
 		gotBody = body
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"orders":[]}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"orders":[]}}`)
 	})
 	defer srv.Close()
 
@@ -300,7 +300,7 @@ func TestSpotCancelBatchOrders(t *testing.T) {
 		body, _ := readAll(r)
 		gotBody = body
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"orders":[]}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"orders":[]}}`)
 	})
 	defer srv.Close()
 
@@ -334,7 +334,7 @@ func TestGetOrder(t *testing.T) {
 		gotPath = r.URL.Path
 		gotQuery = r.URL.RawQuery
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"symbol":"BTC-USDT","orderId":123,"status":"NEW"}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"symbol":"BTC-USDT","orderId":123,"status":"NEW"}}`)
 	})
 	defer srv.Close()
 
@@ -371,7 +371,7 @@ func TestSpotGetOpenOrders(t *testing.T) {
 	service, srv := newSpotTradeTestService(t, func(w http.ResponseWriter, r *http.Request) {
 		gotQuery = r.URL.RawQuery
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"orders":[]}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"orders":[]}}`)
 	})
 	defer srv.Close()
 
@@ -402,7 +402,7 @@ func TestSpotGetOrderHistory(t *testing.T) {
 	service, srv := newSpotTradeTestService(t, func(w http.ResponseWriter, r *http.Request) {
 		gotQuery = r.URL.RawQuery
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"orders":[],"total":0}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"orders":[],"total":0}}`)
 	})
 	defer srv.Close()
 
@@ -428,7 +428,7 @@ func TestAmendOrder(t *testing.T) {
 		body, _ := readAll(r)
 		gotBody = body
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"cancelResult":"SUCCESS","newOrderResult":"SUCCESS"}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"cancelResult":"SUCCESS","newOrderResult":"SUCCESS"}}`)
 	})
 	defer srv.Close()
 
