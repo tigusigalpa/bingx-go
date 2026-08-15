@@ -264,7 +264,7 @@ func newSignatureTestServer(t *testing.T) (*httptest.Server, chan string) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0}`)
+		_, _ = fmt.Fprint(w, `{"code":0}`)
 	}))
 	return srv, received
 }
