@@ -50,7 +50,7 @@ func TestCreateOrderRequest_Limit(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"symbol":"BTC-USDT","orderId":123,"status":"NEW"}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"symbol":"BTC-USDT","orderId":123,"status":"NEW"}}`)
 	})
 	defer srv.Close()
 
@@ -96,7 +96,7 @@ func TestCreateOrderRequest_MarketWithQuoteOrderQty(t *testing.T) {
 		body, _ := readAll(r)
 		gotBody = body
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":{"symbol":"BTC-USDT","orderId":124,"status":"NEW"}}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{"symbol":"BTC-USDT","orderId":124,"status":"NEW"}}`)
 	})
 	defer srv.Close()
 

@@ -133,7 +133,7 @@ func TestSpotAccountGetFundBalance_Retired(t *testing.T) {
 	service, srv := newSpotAccountTestService(t, func(w http.ResponseWriter, r *http.Request) {
 		called = true
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":[]}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":[]}`)
 	})
 	defer srv.Close()
 
