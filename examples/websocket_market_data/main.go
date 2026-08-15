@@ -19,7 +19,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
-	defer stream.Disconnect()
+	defer func() {
+		if err := stream.Disconnect(); err != nil {
+			log.Printf("Failed to disconnect: %v", err)
+		}
+	}()
 
 	stream.OnMessage(func(data map[string]interface{}) {
 		fmt.Printf("Received message: %+v\n", data)

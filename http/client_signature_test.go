@@ -169,7 +169,7 @@ func TestRequestGET_BatchParamValueIsURLEncodedInQueryButRawInSignature(t *testi
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"code":0}`))
+		_, _ = w.Write([]byte(`{"code":0}`))
 	}))
 	defer srv.Close()
 
@@ -196,7 +196,7 @@ func TestRequestDoesNotMutateParams(t *testing.T) {
 	params := map[string]interface{}{"symbol": "BTC-USDT"}
 	srv := httptest.NewServer(nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"code":0}`))
+		_, _ = w.Write([]byte(`{"code":0}`))
 	}))
 	defer srv.Close()
 
@@ -213,7 +213,7 @@ func TestRequestReturnsErrorForHTTPFailureWithoutAPICode(t *testing.T) {
 	srv := httptest.NewServer(nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(nethttp.StatusInternalServerError)
-		w.Write([]byte(`{"message":"temporary failure"}`))
+		_, _ = w.Write([]byte(`{"message":"temporary failure"}`))
 	}))
 	defer srv.Close()
 

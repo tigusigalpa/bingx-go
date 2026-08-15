@@ -436,7 +436,7 @@ func TestRequestSignatureIsVerifiedByServer(t *testing.T) {
 				}
 
 				w.Header().Set("Content-Type", "application/json")
-				fmt.Fprint(w, `{"code":0}`)
+				_, _ = fmt.Fprint(w, `{"code":0}`)
 			}))
 			defer srv.Close()
 

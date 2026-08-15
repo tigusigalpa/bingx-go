@@ -61,7 +61,7 @@ func TestSpotAccountGetAccountOverview_NilAccountType(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":[]}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":[]}`)
 	})
 	defer srv.Close()
 
@@ -111,7 +111,7 @@ func TestSpotAccountGetAccountOverview_WithAccountType(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"code":0,"data":[]}`)
+		_, _ = fmt.Fprint(w, `{"code":0,"data":[]}`)
 	})
 	defer srv.Close()
 

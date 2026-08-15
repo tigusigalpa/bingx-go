@@ -286,7 +286,7 @@ func (c *BaseHTTPClient) requestBody(method, path string, params map[string]inte
 	if err != nil {
 		return nil, errors.NewBingXException("HTTP request failed: "+err.Error(), 0, nil)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

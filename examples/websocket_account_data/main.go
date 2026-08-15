@@ -36,7 +36,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
-	defer stream.Disconnect()
+	defer func() {
+		if err := stream.Disconnect(); err != nil {
+			log.Printf("Failed to disconnect: %v", err)
+		}
+	}()
 
 	stream.OnAccountUpdate(func(eventType string, data map[string]interface{}) {
 		fmt.Printf("Account Update [%s]: %+v\n", eventType, data)

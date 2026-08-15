@@ -489,7 +489,7 @@ func readAll(r *http.Request) (string, error) {
 	if r.Body == nil {
 		return "", nil
 	}
-	defer r.Body.Close()
+	defer func() { _ = r.Body.Close() }()
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		return "", err

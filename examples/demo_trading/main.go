@@ -106,27 +106,3 @@ func main() {
 	fmt.Println("- The VST environment mirrors the live production environment")
 	fmt.Println("- Use this environment for testing strategies without financial risk")
 }
-
-// Example of switching between live and demo environments
-func demonstrateEnvironmentSwitching() {
-	fmt.Println("\n=== Environment Switching Example ===")
-
-	apiKey := "YOUR_API_KEY"
-	apiSecret := "YOUR_API_SECRET"
-
-	// Live production client
-	liveClient := bingx.NewClient(apiKey, apiSecret)
-	fmt.Printf("Live Client Endpoint: %s\n", liveClient.GetEndpoint())
-
-	// Demo client
-	demoClient := bingx.NewDemoClient(apiKey, apiSecret)
-	fmt.Printf("Demo Client Endpoint: %s\n", demoClient.GetEndpoint())
-
-	// Manual demo configuration
-	manualDemoClient := bingx.NewClient(
-		apiKey,
-		apiSecret,
-		bingx.WithDemoEnvironment(),
-	)
-	fmt.Printf("Manual Demo Client Endpoint: %s\n", manualDemoClient.GetEndpoint())
-}
