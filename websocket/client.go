@@ -163,7 +163,9 @@ func (c *WebSocketClient) Listen() error {
 				}
 
 				if ping, ok := parsed["ping"]; ok {
-					c.Send(map[string]interface{}{"pong": ping})
+					if err := c.Send(map[string]interface{}{"pong": ping}); err != nil {
+						return fmt.Errorf("failed to respond to WebSocket ping: %w", err)
+					}
 					continue
 				}
 

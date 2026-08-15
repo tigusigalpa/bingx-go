@@ -35,7 +35,7 @@ func TestRequestGET_TimestampOnly(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"code":0}`))
+		_, _ = w.Write([]byte(`{"code":0}`))
 	}))
 	defer srv.Close()
 
@@ -78,7 +78,7 @@ func TestRequestGET_WithSymbol(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"code":0}`))
+		_, _ = w.Write([]byte(`{"code":0}`))
 	}))
 	defer srv.Close()
 
@@ -120,7 +120,7 @@ func TestRequestPOST_BodyIsCanonicalPlusSignature(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"code":0}`))
+		_, _ = w.Write([]byte(`{"code":0}`))
 	}))
 	defer srv.Close()
 
