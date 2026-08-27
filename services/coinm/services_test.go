@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	bxhttp "github.com/tigusigalpa/bingx-go/v2/http"
@@ -33,6 +34,33 @@ func newTestClient(t *testing.T, method, path string, want map[string]string) (*
 		_, _ = fmt.Fprint(w, `{"code":0,"data":{}}`)
 	}))
 	return bxhttp.NewBaseHTTPClient("key", "secret", srv.URL, "", "hex"), srv
+}
+
+func TestAllExportedServiceMethodsExecute(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = fmt.Fprint(w, `{"code":0,"data":{}}`)
+	}))
+	defer srv.Close()
+	client := bxhttp.NewBaseHTTPClient("key", "secret", srv.URL, "", "hex")
+	for _, service := range []interface{}{NewMarketService(client), NewTradeService(client), NewListenKeyService(client)} {
+		value := reflect.ValueOf(service)
+		for i := 0; i < value.NumMethod(); i++ {
+			method := value.Type().Method(i)
+			args := make([]reflect.Value, method.Type.NumIn()-1)
+			for j := range args {
+				args[j] = reflect.Zero(method.Type.In(j + 1))
+			}
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						t.Errorf("%s panicked: %v", method.Name, r)
+					}
+				}()
+				value.Method(i).Call(args)
+			}()
+		}
+	}
 }
 
 func TestMarketServiceRoutes(t *testing.T) {
