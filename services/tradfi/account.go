@@ -6,10 +6,12 @@ import (
 	"github.com/tigusigalpa/bingx-go/v2/http"
 )
 
+// AccountService represents a BingX API component or value.
 type AccountService struct {
 	client *http.BaseHTTPClient
 }
 
+// NewAccountService creates a new client or service instance.
 func NewAccountService(client *http.BaseHTTPClient) *AccountService {
 	return &AccountService{client: client}
 }

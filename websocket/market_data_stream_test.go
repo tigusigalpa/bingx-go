@@ -12,8 +12,8 @@ func TestNewMarketDataStream(t *testing.T) {
 		t.Fatal("Expected MarketDataStream to be created, got nil")
 	}
 
-	if stream.WebSocketClient == nil {
-		t.Error("WebSocketClient should not be nil")
+	if stream.Client == nil {
+		t.Error("Client should not be nil")
 	}
 }
 

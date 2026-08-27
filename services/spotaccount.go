@@ -26,14 +26,17 @@ const (
 	AccountTypeC2C         = "c2c"
 )
 
+// SpotAccountService represents a BingX API component or value.
 type SpotAccountService struct {
 	client *http.BaseHTTPClient
 }
 
+// NewSpotAccountService creates a new client or service instance.
 func NewSpotAccountService(client *http.BaseHTTPClient) *SpotAccountService {
 	return &SpotAccountService{client: client}
 }
 
+// GetBalance performs the GetBalance operation.
 func (s *SpotAccountService) GetBalance() (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/spot/v1/account/balance", nil)
 }
@@ -61,6 +64,7 @@ func (s *SpotAccountService) GetFundBalance() (map[string]interface{}, error) {
 	return nil, errors.New("GetFundBalance is retired; use GetAccountOverview instead")
 }
 
+// UniversalTransfer performs the UniversalTransfer operation.
 func (s *SpotAccountService) UniversalTransfer(transferType, asset string, amount float64) (map[string]interface{}, error) {
 	return s.client.Request("POST", "/openApi/wallets/v1/capital/transfer", map[string]interface{}{
 		"type":   transferType,
@@ -69,6 +73,7 @@ func (s *SpotAccountService) UniversalTransfer(transferType, asset string, amoun
 	})
 }
 
+// GetAssetTransferRecords performs the GetAssetTransferRecords operation.
 func (s *SpotAccountService) GetAssetTransferRecords(transferType string, startTime, endTime *int64, limit int) (map[string]interface{}, error) {
 	params := map[string]interface{}{
 		"type":  transferType,
@@ -110,6 +115,7 @@ func (s *SpotAccountService) InternalTransfer(coin string, walletType int, amoun
 	return s.client.Request("POST", "/openApi/wallets/v1/capital/innerTransfer/apply", params)
 }
 
+// GetInternalTransferRecords performs the GetInternalTransferRecords operation.
 func (s *SpotAccountService) GetInternalTransferRecords(coin string, transferType *string, startTime, endTime *int64, limit int) (map[string]interface{}, error) {
 	params := map[string]interface{}{
 		"coin":  coin,
@@ -129,10 +135,12 @@ func (s *SpotAccountService) GetInternalTransferRecords(coin string, transferTyp
 	return s.client.Request("GET", "/openApi/wallets/v1/capital/innerTransfer/records", params)
 }
 
+// GetAllAccountBalances performs the GetAllAccountBalances operation.
 func (s *SpotAccountService) GetAllAccountBalances() (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/spot/v1/account/allBalances", nil)
 }
 
+// GetAccountType performs the GetAccountType operation.
 func (s *SpotAccountService) GetAccountType() (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/spot/v1/account/type", nil)
 }

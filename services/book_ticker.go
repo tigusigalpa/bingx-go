@@ -8,6 +8,7 @@ import (
 
 var decimalPattern = regexp.MustCompile(`^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$`)
 
+// BookTicker represents a BingX API component or value.
 type BookTicker struct {
 	Symbol       string
 	BidPrice     string
@@ -18,6 +19,7 @@ type BookTicker struct {
 	Timestamp    string
 }
 
+// SpotBookTicker represents a BingX API component or value.
 type SpotBookTicker struct {
 	Symbol      string
 	BidPrice    string
@@ -27,6 +29,7 @@ type SpotBookTicker struct {
 	Timestamp   string
 }
 
+// GetBookTickerData performs the GetBookTickerData operation.
 func (s *MarketService) GetBookTickerData(symbol *string) (*BookTicker, error) {
 	params := bookTickerParams(symbol)
 	var response struct {
@@ -56,6 +59,7 @@ func (s *MarketService) GetBookTickerData(symbol *string) (*BookTicker, error) {
 	return &ticker, nil
 }
 
+// GetSpotBookTickerData performs the GetSpotBookTickerData operation.
 func (s *MarketService) GetSpotBookTickerData(symbol *string) (*SpotBookTicker, error) {
 	params := bookTickerParams(symbol)
 	var response struct {
@@ -78,6 +82,7 @@ func (s *MarketService) GetSpotBookTickerData(symbol *string) (*SpotBookTicker, 
 	return &tickers[0], nil
 }
 
+// UnmarshalJSON implements json.Unmarshaler.
 func (t *BookTicker) UnmarshalJSON(data []byte) error {
 	var fields map[string]json.RawMessage
 	if err := json.Unmarshal(data, &fields); err != nil {
@@ -109,6 +114,7 @@ func (t *BookTicker) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// UnmarshalJSON implements json.Unmarshaler.
 func (t *SpotBookTicker) UnmarshalJSON(data []byte) error {
 	var fields map[string]json.RawMessage
 	if err := json.Unmarshal(data, &fields); err != nil {
@@ -137,6 +143,7 @@ func (t *SpotBookTicker) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// bookTickerParams performs the bookTickerParams operation.
 func bookTickerParams(symbol *string) map[string]interface{} {
 	params := map[string]interface{}{}
 	if symbol != nil {
@@ -145,6 +152,7 @@ func bookTickerParams(symbol *string) map[string]interface{} {
 	return params
 }
 
+// requiredString performs the requiredString operation.
 func requiredString(fields map[string]json.RawMessage, name string) (string, error) {
 	raw, ok := fields[name]
 	if !ok {
@@ -161,6 +169,7 @@ func requiredString(fields map[string]json.RawMessage, name string) (string, err
 	return value, nil
 }
 
+// requiredDecimal performs the requiredDecimal operation.
 func requiredDecimal(fields map[string]json.RawMessage, name string) (string, error) {
 	raw, ok := fields[name]
 	if !ok {

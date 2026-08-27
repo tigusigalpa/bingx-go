@@ -19,6 +19,7 @@ import (
 	"github.com/tigusigalpa/bingx-go/v2/errors"
 )
 
+// BaseHTTPClient represents a BingX API component or value.
 type BaseHTTPClient struct {
 	apiKey            string
 	apiSecret         string
@@ -28,6 +29,7 @@ type BaseHTTPClient struct {
 	httpClient        *http.Client
 }
 
+// NewBaseHTTPClient creates a new client or service instance.
 func NewBaseHTTPClient(apiKey, apiSecret, baseURI, sourceKey, signatureEncoding string) *BaseHTTPClient {
 	return &BaseHTTPClient{
 		apiKey:            apiKey,
@@ -41,10 +43,12 @@ func NewBaseHTTPClient(apiKey, apiSecret, baseURI, sourceKey, signatureEncoding 
 	}
 }
 
+// timestamp performs the timestamp operation.
 func (c *BaseHTTPClient) timestamp() string {
 	return strconv.FormatInt(time.Now().UnixMilli(), 10)
 }
 
+// sortedKeys performs the sortedKeys operation.
 func (c *BaseHTTPClient) sortedKeys(params map[string]interface{}) []string {
 	keys := make([]string, 0, len(params))
 	for k := range params {
@@ -57,6 +61,7 @@ func (c *BaseHTTPClient) sortedKeys(params map[string]interface{}) []string {
 	return keys
 }
 
+// paramValueToString performs the paramValueToString operation.
 func (c *BaseHTTPClient) paramValueToString(v interface{}) (string, bool) {
 	if v == nil {
 		return "", false
@@ -155,6 +160,7 @@ func (c *BaseHTTPClient) buildSignedString(params map[string]interface{}, signat
 	return strings.Join(parts, "&")
 }
 
+// signString performs the signString operation.
 func (c *BaseHTTPClient) signString(str string) string {
 	h := hmac.New(sha256.New, []byte(c.apiSecret))
 	h.Write([]byte(str))
@@ -169,6 +175,7 @@ func (c *BaseHTTPClient) signString(str string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
+// headers performs the headers operation.
 func (c *BaseHTTPClient) headers() map[string]string {
 	headers := map[string]string{
 		"X-BX-APIKEY":  c.apiKey,
@@ -182,6 +189,7 @@ func (c *BaseHTTPClient) headers() map[string]string {
 	return headers
 }
 
+// handleAPIError performs the handleAPIError operation.
 func (c *BaseHTTPClient) handleAPIError(response map[string]interface{}) error {
 	code, hasCode := response["code"]
 	if !hasCode {
@@ -208,6 +216,7 @@ func (c *BaseHTTPClient) handleAPIError(response map[string]interface{}) error {
 	}
 }
 
+// Request performs the Request operation.
 func (c *BaseHTTPClient) Request(method, path string, params map[string]interface{}) (map[string]interface{}, error) {
 	body, err := c.requestBody(method, path, params)
 	if err != nil {
@@ -222,6 +231,7 @@ func (c *BaseHTTPClient) Request(method, path string, params map[string]interfac
 	return data, nil
 }
 
+// RequestJSON performs the RequestJSON operation.
 func (c *BaseHTTPClient) RequestJSON(method, path string, params map[string]interface{}, result interface{}) error {
 	body, err := c.requestBody(method, path, params)
 	if err != nil {
@@ -235,6 +245,7 @@ func (c *BaseHTTPClient) RequestJSON(method, path string, params map[string]inte
 	return nil
 }
 
+// requestBody performs the requestBody operation.
 func (c *BaseHTTPClient) requestBody(method, path string, params map[string]interface{}) ([]byte, error) {
 	method = strings.ToUpper(method)
 
@@ -313,10 +324,12 @@ func (c *BaseHTTPClient) requestBody(method, path string, params map[string]inte
 	return body, nil
 }
 
+// GetEndpoint performs the GetEndpoint operation.
 func (c *BaseHTTPClient) GetEndpoint() string {
 	return c.baseURI
 }
 
+// GetAPIKey performs the GetAPIKey operation.
 func (c *BaseHTTPClient) GetAPIKey() string {
 	return c.apiKey
 }

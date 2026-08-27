@@ -2,10 +2,12 @@ package tradfi
 
 import "github.com/tigusigalpa/bingx-go/v2/http"
 
+// ListenKeyService represents a BingX API component or value.
 type ListenKeyService struct {
 	client *http.BaseHTTPClient
 }
 
+// NewListenKeyService creates a new client or service instance.
 func NewListenKeyService(client *http.BaseHTTPClient) *ListenKeyService {
 	return &ListenKeyService{client: client}
 }

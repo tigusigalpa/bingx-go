@@ -11,6 +11,12 @@
 # Output of the go coverage tool
 *.out
 
+# Local Go build and test caches
+.gocache/
+.gotmp/
+coverage/
+test-results/
+
 # Dependency directories
 vendor/
 

@@ -19,7 +19,7 @@ import (
 // goroutine can still take c.mu.Lock() (here via Disconnect's behavior of
 // reading c.conn under Lock).
 func TestSend_DoesNotHoldStateLock_WhileWriting(t *testing.T) {
-	c := NewWebSocketClient("ws://invalid.local")
+	c := NewClient("ws://invalid.local")
 
 	// Pin writeMu in another goroutine to simulate an in-flight WriteMessage.
 	c.writeMu.Lock()
@@ -48,7 +48,7 @@ func TestSend_DoesNotHoldStateLock_WhileWriting(t *testing.T) {
 // calls on a not-connected client return (with the not-connected error)
 // rather than deadlocking each other.
 func TestSend_ConcurrentCallers_NoDeadlock(t *testing.T) {
-	c := NewWebSocketClient("ws://invalid.local")
+	c := NewClient("ws://invalid.local")
 
 	var wg sync.WaitGroup
 	done := make(chan struct{})
@@ -74,7 +74,7 @@ func TestSend_ConcurrentCallers_NoDeadlock(t *testing.T) {
 }
 
 func TestDisconnectIsIdempotent(t *testing.T) {
-	c := NewWebSocketClient("ws://invalid.local")
+	c := NewClient("ws://invalid.local")
 	if err := c.Disconnect(); err != nil {
 		t.Fatalf("first disconnect returned error: %v", err)
 	}
@@ -99,7 +99,7 @@ func TestClientReconnectsAfterDisconnect(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	c := NewWebSocketClient("ws" + strings.TrimPrefix(srv.URL, "http"))
+	c := NewClient("ws" + strings.TrimPrefix(srv.URL, "http"))
 	if err := c.Connect(); err != nil {
 		t.Fatalf("first connect returned error: %v", err)
 	}

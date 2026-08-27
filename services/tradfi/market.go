@@ -2,10 +2,12 @@ package tradfi
 
 import "github.com/tigusigalpa/bingx-go/v2/http"
 
+// MarketService represents a BingX API component or value.
 type MarketService struct {
 	client *http.BaseHTTPClient
 }
 
+// NewMarketService creates a new client or service instance.
 func NewMarketService(client *http.BaseHTTPClient) *MarketService {
 	return &MarketService{client: client}
 }

@@ -6,14 +6,17 @@ import (
 	"github.com/tigusigalpa/bingx-go/v2/http"
 )
 
+// TradeService represents a BingX API component or value.
 type TradeService struct {
 	client *http.BaseHTTPClient
 }
 
+// NewTradeService creates a new client or service instance.
 func NewTradeService(client *http.BaseHTTPClient) *TradeService {
 	return &TradeService{client: client}
 }
 
+// OrderTypeMarket defines a BingX API constant.
 const (
 	OrderTypeMarket             = "MARKET"
 	OrderTypeLimit              = "LIMIT"

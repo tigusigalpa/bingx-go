@@ -10,24 +10,29 @@ const (
 	SubAccountWalletTypeSpot             = 15 // Spot Account
 )
 
+// SubAccountService represents a BingX API component or value.
 type SubAccountService struct {
 	client *http.BaseHTTPClient
 }
 
+// NewSubAccountService creates a new client or service instance.
 func NewSubAccountService(client *http.BaseHTTPClient) *SubAccountService {
 	return &SubAccountService{client: client}
 }
 
+// CreateSubAccount performs the CreateSubAccount operation.
 func (s *SubAccountService) CreateSubAccount(subAccountString string) (map[string]interface{}, error) {
 	return s.client.Request("POST", "/openApi/subAccount/v1/create", map[string]interface{}{
 		"subAccountString": subAccountString,
 	})
 }
 
+// GetAccountUID performs the GetAccountUID operation.
 func (s *SubAccountService) GetAccountUID() (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/subAccount/v1/uid", nil)
 }
 
+// GetSubAccountList performs the GetSubAccountList operation.
 func (s *SubAccountService) GetSubAccountList(subAccountString *string, current, size int) (map[string]interface{}, error) {
 	params := map[string]interface{}{
 		"current": current,
@@ -41,12 +46,14 @@ func (s *SubAccountService) GetSubAccountList(subAccountString *string, current,
 	return s.client.Request("GET", "/openApi/subAccount/v1/list", params)
 }
 
+// GetSubAccountAssets performs the GetSubAccountAssets operation.
 func (s *SubAccountService) GetSubAccountAssets(subUID string) (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/subAccount/v1/assets", map[string]interface{}{
 		"subUid": subUID,
 	})
 }
 
+// UpdateSubAccountStatus performs the UpdateSubAccountStatus operation.
 func (s *SubAccountService) UpdateSubAccountStatus(subAccountString string, status int) (map[string]interface{}, error) {
 	return s.client.Request("POST", "/openApi/subAccount/v1/status", map[string]interface{}{
 		"subAccountString": subAccountString,
@@ -54,10 +61,12 @@ func (s *SubAccountService) UpdateSubAccountStatus(subAccountString string, stat
 	})
 }
 
+// GetAllSubAccountBalances performs the GetAllSubAccountBalances operation.
 func (s *SubAccountService) GetAllSubAccountBalances() (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/subAccount/v1/allBalances", nil)
 }
 
+// CreateSubAccountAPIKey performs the CreateSubAccountAPIKey operation.
 func (s *SubAccountService) CreateSubAccountAPIKey(subAccountString, label string, permissions map[string]bool, ip *string) (map[string]interface{}, error) {
 	params := map[string]interface{}{
 		"subAccountString": subAccountString,
@@ -72,12 +81,14 @@ func (s *SubAccountService) CreateSubAccountAPIKey(subAccountString, label strin
 	return s.client.Request("POST", "/openApi/subAccount/v1/apiKey/create", params)
 }
 
+// QueryAPIKey performs the QueryAPIKey operation.
 func (s *SubAccountService) QueryAPIKey(subAccountString string) (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/subAccount/v1/apiKey/query", map[string]interface{}{
 		"subAccountString": subAccountString,
 	})
 }
 
+// EditSubAccountAPIKey performs the EditSubAccountAPIKey operation.
 func (s *SubAccountService) EditSubAccountAPIKey(subAccountString, apiKey string, permissions map[string]bool, ip *string) (map[string]interface{}, error) {
 	params := map[string]interface{}{
 		"subAccountString": subAccountString,
@@ -92,6 +103,7 @@ func (s *SubAccountService) EditSubAccountAPIKey(subAccountString, apiKey string
 	return s.client.Request("POST", "/openApi/subAccount/v1/apiKey/edit", params)
 }
 
+// DeleteSubAccountAPIKey performs the DeleteSubAccountAPIKey operation.
 func (s *SubAccountService) DeleteSubAccountAPIKey(subAccountString, apiKey string) (map[string]interface{}, error) {
 	return s.client.Request("POST", "/openApi/subAccount/v1/apiKey/delete", map[string]interface{}{
 		"subAccountString": subAccountString,
@@ -99,6 +111,7 @@ func (s *SubAccountService) DeleteSubAccountAPIKey(subAccountString, apiKey stri
 	})
 }
 
+// AuthorizeSubAccountInternalTransfer performs the AuthorizeSubAccountInternalTransfer operation.
 func (s *SubAccountService) AuthorizeSubAccountInternalTransfer(subAccountString string, authorize int) (map[string]interface{}, error) {
 	return s.client.Request("POST", "/openApi/subAccount/v1/innerTransfer/authorize", map[string]interface{}{
 		"subAccountString": subAccountString,
@@ -131,6 +144,7 @@ func (s *SubAccountService) SubAccountInternalTransfer(coin string, walletType i
 	return s.client.Request("POST", "/openApi/wallets/v1/capital/subAccountInnerTransfer/apply", params)
 }
 
+// GetSubAccountInternalTransferRecords performs the GetSubAccountInternalTransferRecords operation.
 func (s *SubAccountService) GetSubAccountInternalTransferRecords(startTime, endTime *int64, current, size int) (map[string]interface{}, error) {
 	params := map[string]interface{}{
 		"current": current,
@@ -147,6 +161,7 @@ func (s *SubAccountService) GetSubAccountInternalTransferRecords(startTime, endT
 	return s.client.Request("GET", "/openApi/subAccount/v1/innerTransfer/records", params)
 }
 
+// SubAccountAssetTransfer performs the SubAccountAssetTransfer operation.
 func (s *SubAccountService) SubAccountAssetTransfer(subUID, transferType, asset string, amount float64) (map[string]interface{}, error) {
 	return s.client.Request("POST", "/openApi/subAccount/v1/transfer", map[string]interface{}{
 		"subUid": subUID,
@@ -156,12 +171,14 @@ func (s *SubAccountService) SubAccountAssetTransfer(subUID, transferType, asset 
 	})
 }
 
+// GetSubAccountTransferSupportedCoins performs the GetSubAccountTransferSupportedCoins operation.
 func (s *SubAccountService) GetSubAccountTransferSupportedCoins(subUID string) (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/subAccount/v1/transfer/supportCoins", map[string]interface{}{
 		"subUid": subUID,
 	})
 }
 
+// GetSubAccountAssetTransferHistory performs the GetSubAccountAssetTransferHistory operation.
 func (s *SubAccountService) GetSubAccountAssetTransferHistory(subUID, transferType string, startTime, endTime *int64, limit int) (map[string]interface{}, error) {
 	params := map[string]interface{}{
 		"subUid": subUID,
@@ -179,6 +196,7 @@ func (s *SubAccountService) GetSubAccountAssetTransferHistory(subUID, transferTy
 	return s.client.Request("GET", "/openApi/subAccount/v1/transfer/history", params)
 }
 
+// CreateSubAccountDepositAddress performs the CreateSubAccountDepositAddress operation.
 func (s *SubAccountService) CreateSubAccountDepositAddress(coin, network, subUID string) (map[string]interface{}, error) {
 	return s.client.Request("POST", "/openApi/subAccount/v1/capital/deposit/address", map[string]interface{}{
 		"coin":    coin,
@@ -187,6 +205,7 @@ func (s *SubAccountService) CreateSubAccountDepositAddress(coin, network, subUID
 	})
 }
 
+// GetSubAccountDepositAddress performs the GetSubAccountDepositAddress operation.
 func (s *SubAccountService) GetSubAccountDepositAddress(coin, subUID string, network *string) (map[string]interface{}, error) {
 	params := map[string]interface{}{
 		"coin":   coin,
@@ -200,6 +219,7 @@ func (s *SubAccountService) GetSubAccountDepositAddress(coin, subUID string, net
 	return s.client.Request("GET", "/openApi/subAccount/v1/capital/deposit/address", params)
 }
 
+// GetSubAccountDepositHistory performs the GetSubAccountDepositHistory operation.
 func (s *SubAccountService) GetSubAccountDepositHistory(subUID, coin string, status *int, startTime, endTime *int64, limit int) (map[string]interface{}, error) {
 	params := map[string]interface{}{
 		"subUid": subUID,

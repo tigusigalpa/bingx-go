@@ -12,9 +12,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// MessageCallback represents a BingX API component or value.
 type MessageCallback func(data map[string]interface{})
 
-type WebSocketClient struct {
+// Client manages a connection to a BingX WebSocket endpoint.
+type Client struct {
 	url       string
 	conn      *websocket.Conn
 	callbacks []MessageCallback
@@ -27,15 +29,17 @@ type WebSocketClient struct {
 	done    chan struct{}
 }
 
-func NewWebSocketClient(url string) *WebSocketClient {
-	return &WebSocketClient{
+// NewClient creates a WebSocket client for url.
+func NewClient(url string) *Client {
+	return &Client{
 		url:       url,
 		callbacks: make([]MessageCallback, 0),
 		done:      make(chan struct{}),
 	}
 }
 
-func (c *WebSocketClient) Connect() error {
+// Connect performs the Connect operation.
+func (c *Client) Connect() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.conn != nil {
@@ -62,7 +66,8 @@ func (c *WebSocketClient) Connect() error {
 	return nil
 }
 
-func (c *WebSocketClient) Disconnect() error {
+// Disconnect performs the Disconnect operation.
+func (c *Client) Disconnect() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -83,7 +88,8 @@ func (c *WebSocketClient) Disconnect() error {
 	return nil
 }
 
-func (c *WebSocketClient) Send(message map[string]interface{}) error {
+// Send performs the Send operation.
+func (c *Client) Send(message map[string]interface{}) error {
 	c.mu.RLock()
 	conn := c.conn
 	c.mu.RUnlock()
@@ -105,7 +111,8 @@ func (c *WebSocketClient) Send(message map[string]interface{}) error {
 	return conn.WriteMessage(websocket.TextMessage, data)
 }
 
-func (c *WebSocketClient) Subscribe(id, dataType string) error {
+// Subscribe performs the Subscribe operation.
+func (c *Client) Subscribe(id, dataType string) error {
 	return c.Send(map[string]interface{}{
 		"id":       id,
 		"reqType":  "sub",
@@ -113,7 +120,8 @@ func (c *WebSocketClient) Subscribe(id, dataType string) error {
 	})
 }
 
-func (c *WebSocketClient) Unsubscribe(id, dataType string) error {
+// Unsubscribe performs the Unsubscribe operation.
+func (c *Client) Unsubscribe(id, dataType string) error {
 	return c.Send(map[string]interface{}{
 		"id":       id,
 		"reqType":  "unsub",
@@ -121,13 +129,15 @@ func (c *WebSocketClient) Unsubscribe(id, dataType string) error {
 	})
 }
 
-func (c *WebSocketClient) OnMessage(callback MessageCallback) {
+// OnMessage performs the OnMessage operation.
+func (c *Client) OnMessage(callback MessageCallback) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.callbacks = append(c.callbacks, callback)
 }
 
-func (c *WebSocketClient) Listen() error {
+// Listen performs the Listen operation.
+func (c *Client) Listen() error {
 	c.mu.Lock()
 	if c.conn == nil {
 		c.mu.Unlock()
@@ -184,7 +194,8 @@ func (c *WebSocketClient) Listen() error {
 	return nil
 }
 
-func (c *WebSocketClient) decompressMessage(message []byte) ([]byte, error) {
+// decompressMessage performs the decompressMessage operation.
+func (c *Client) decompressMessage(message []byte) ([]byte, error) {
 	if len(message) >= 2 && message[0] == 0x1f && message[1] == 0x8b {
 		reader, err := gzip.NewReader(bytes.NewReader(message))
 		if err != nil {
@@ -202,19 +213,22 @@ func (c *WebSocketClient) decompressMessage(message []byte) ([]byte, error) {
 	return message, nil
 }
 
-func (c *WebSocketClient) IsConnected() bool {
+// IsConnected performs the IsConnected operation.
+func (c *Client) IsConnected() bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.conn != nil
 }
 
-func (c *WebSocketClient) Stop() {
+// Stop performs the Stop operation.
+func (c *Client) Stop() {
 	c.mu.Lock()
 	c.running = false
 	c.mu.Unlock()
 }
 
-func (c *WebSocketClient) isRunning() bool {
+// isRunning performs the isRunning operation.
+func (c *Client) isRunning() bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.running

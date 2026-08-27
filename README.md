@@ -7,6 +7,7 @@
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tigusigalpa/bingx-go/v2?style=flat-square)](https://goreportcard.com/report/github.com/tigusigalpa/bingx-go/v2)
+[![Codecov](https://codecov.io/gh/tigusigalpa/bingx-go/graph/badge.svg)](https://codecov.io/gh/tigusigalpa/bingx-go)
 [![GitHub Release](https://img.shields.io/github/v/release/tigusigalpa/bingx-go?style=flat-square)](https://github.com/tigusigalpa/bingx-go/releases)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue?style=flat-square&logo=go)](https://pkg.go.dev/github.com/tigusigalpa/bingx-go/v2)
 
@@ -17,6 +18,8 @@ TradFi (stocks, forex, commodities, indices), spot trading, copy trading, sub-ac
 260+ API methods with full v3 support.
 
 **Package:** [pkg.go.dev/github.com/tigusigalpa/bingx-go/v2](https://pkg.go.dev/github.com/tigusigalpa/bingx-go/v2)
+
+> ⚠️ **Breaking change in v2.4.x:** the direct WebSocket client was renamed from `websocket.WebSocketClient` to `websocket.Client`, and its constructor from `websocket.NewWebSocketClient(url)` to `websocket.NewClient(url)`. High-level helpers such as `client.NewMarketDataStream()` and `client.NewAccountDataStream()` are unchanged.
 
 > 📖 **[Full documentation available on Wiki](https://github.com/tigusigalpa/bingx-go/wiki)**
 
