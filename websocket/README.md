@@ -2,6 +2,8 @@
 
 This package provides WebSocket streaming functionality for BingX API, supporting both public market data and private account data streams.
 
+> ⚠️ **Migration for v2.4.x:** the direct client was renamed from `websocket.WebSocketClient` to `websocket.Client`. Replace `websocket.NewWebSocketClient(url)` with `websocket.NewClient(url)`. `bingx.Client.NewMarketDataStream()` and `bingx.Client.NewAccountDataStream()` are unchanged.
+
 ## Features
 
 - **Market Data Stream**: Real-time public market data (trades, klines, depth, tickers)
@@ -9,6 +11,7 @@ This package provides WebSocket streaming functionality for BingX API, supportin
 - **Automatic Ping/Pong**: Handles WebSocket keep-alive automatically
 - **GZIP Decompression**: Automatically decompresses gzipped messages
 - **Thread-Safe**: Safe for concurrent use
+- **Explicit lifecycle**: `Disconnect()` is idempotent and a client can be connected again after disconnecting
 
 ## Installation
 
@@ -38,7 +41,11 @@ func main() {
     if err := stream.Connect(); err != nil {
         log.Fatal(err)
     }
-    defer stream.Disconnect()
+    defer func() {
+        if err := stream.Disconnect(); err != nil {
+            log.Printf("disconnect: %v", err)
+        }
+    }()
     
     // Register message handler
     stream.OnMessage(func(data map[string]interface{}) {
@@ -46,11 +53,35 @@ func main() {
     })
     
     // Subscribe to trade updates
-    stream.SubscribeTrade("BTC-USDT")
+    if err := stream.SubscribeTrade("BTC-USDT"); err != nil {
+        log.Fatal(err)
+    }
     
     // Start listening
-    stream.Listen()
+    if err := stream.Listen(); err != nil {
+        log.Printf("stream stopped: %v", err)
+    }
 }
+```
+
+### Direct Client Usage
+
+Use `websocket.Client` only when you need a custom endpoint or want to send raw subscription frames. For normal market and account streams, prefer the high-level helpers above.
+
+```go
+stream := websocket.NewClient("wss://open-api-swap.bingx.com/swap-market")
+if err := stream.Connect(); err != nil {
+    return err
+}
+defer func() { _ = stream.Disconnect() }()
+
+stream.OnMessage(func(message map[string]interface{}) {
+    // Process the decoded JSON message.
+})
+if err := stream.Subscribe("prices", "BTC-USDT@ticker"); err != nil {
+    return err
+}
+return stream.Listen() // blocks until Disconnect, a read error, or a close frame
 ```
 
 ### Available Subscriptions
@@ -122,7 +153,11 @@ func main() {
     if err := stream.Connect(); err != nil {
         log.Fatal(err)
     }
-    defer stream.Disconnect()
+    defer func() {
+        if err := stream.Disconnect(); err != nil {
+            log.Printf("disconnect: %v", err)
+        }
+    }()
     
     // Listen for all account updates
     stream.OnAccountUpdate(func(eventType string, data map[string]interface{}) {
@@ -171,13 +206,16 @@ stream.OnOrderUpdate(func(order interface{}) {
 
 ```go
 stream := client.NewMarketDataStream()
-stream.Connect()
+if err := stream.Connect(); err != nil {
+    log.Fatal(err)
+}
+defer func() { _ = stream.Disconnect() }()
 
 // Subscribe to multiple data types
-stream.SubscribeTrade("BTC-USDT")
-stream.SubscribeTrade("ETH-USDT")
-stream.SubscribeKline("BTC-USDT", "1m")
-stream.SubscribeDepth("BTC-USDT", 20)
+if err := stream.SubscribeTrade("BTC-USDT"); err != nil { log.Fatal(err) }
+if err := stream.SubscribeTrade("ETH-USDT"); err != nil { log.Fatal(err) }
+if err := stream.SubscribeKline("BTC-USDT", "1m"); err != nil { log.Fatal(err) }
+if err := stream.SubscribeDepth("BTC-USDT", 20); err != nil { log.Fatal(err) }
 
 stream.Listen()
 ```
@@ -200,8 +238,9 @@ import (
 
 func main() {
     stream := client.NewMarketDataStream()
-    stream.Connect()
-    defer stream.Disconnect()
+    if err := stream.Connect(); err != nil {
+        log.Fatal(err)
+    }
     
     // Handle Ctrl+C
     sigChan := make(chan os.Signal, 1)
@@ -209,10 +248,15 @@ func main() {
     
     go func() {
         <-sigChan
-        stream.Stop()
+        // Disconnect closes the socket and unblocks a pending ReadMessage.
+        if err := stream.Disconnect(); err != nil {
+            log.Printf("disconnect: %v", err)
+        }
     }()
     
-    stream.Listen()
+    if err := stream.Listen(); err != nil {
+        log.Printf("stream stopped: %v", err)
+    }
 }
 ```
 
@@ -225,7 +269,9 @@ Listen keys expire after 60 minutes. You should extend them periodically:
 ticker := time.NewTicker(30 * time.Minute)
 go func() {
     for range ticker.C {
-        client.ListenKey().Extend(listenKey)
+        if _, err := client.ListenKey().Extend(listenKey); err != nil {
+            log.Printf("listen key extension failed: %v", err)
+        }
     }
 }()
 ```
@@ -248,9 +294,21 @@ if err := stream.Listen(); err != nil {
 }
 ```
 
+`Listen()` is blocking. A server close, read error, or failed pong response is returned to the caller. The package does not reconnect automatically; create your own retry/backoff loop if the application requires persistent connectivity.
+
+## Message and Subscription Protocol
+
+`Subscribe` and `Unsubscribe` send BingX frames in the following form:
+
+```json
+{"id":"request-id","reqType":"sub","dataType":"BTC-USDT@trade"}
+```
+
+The typed market helpers construct `dataType` values such as `BTC-USDT@trade`, `BTC-USDT@kline_1m`, `BTC-USDT@depth20`, `BTC-USDT@ticker`, and `BTC-USDT@bookTicker`. Each helper accepts an optional request ID; otherwise the SDK creates one.
+
 ## Thread Safety
 
-All WebSocket client methods are thread-safe and can be called from multiple goroutines.
+All WebSocket client methods are thread-safe and can be called from multiple goroutines. Writes are serialized so concurrent subscribe/unsubscribe calls do not violate Gorilla WebSocket's single-writer requirement. Register callbacks before calling `Listen()` when possible; callbacks run synchronously on the listener goroutine, so long-running work should be handed off to another goroutine or channel.
 
 ## Examples
 
@@ -262,5 +320,6 @@ See the `examples/` directory for complete working examples:
 
 - Messages are automatically decompressed if gzipped
 - Ping/pong messages are handled automatically
-- The client will continue listening until `Stop()` is called or an error occurs
+- `Stop()` changes the listener state but does not interrupt an already-blocked network read; use `Disconnect()` for shutdown from another goroutine
+- The client will continue listening until it is disconnected or a read error occurs
 - Multiple message handlers can be registered using `OnMessage()`

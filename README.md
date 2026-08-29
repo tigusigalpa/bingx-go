@@ -1,17 +1,16 @@
-# BingX Go SDK
-
-<div align="center">
+# BingX Golang SDK
 
 ![BingX Golang SDK](https://i.postimg.cc/3RmFkpjD/bingx-go-banner-github.jpg)
 
+[![CI](https://github.com/tigusigalpa/bingx-go/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tigusigalpa/bingx-go/actions/workflows/ci.yml)
+[![Tests](https://github.com/tigusigalpa/bingx-go/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/tigusigalpa/bingx-go/actions/workflows/test.yml)
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tigusigalpa/bingx-go/v2?style=flat-square)](https://goreportcard.com/report/github.com/tigusigalpa/bingx-go/v2)
+[![CodeQL](https://github.com/tigusigalpa/bingx-go/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/tigusigalpa/bingx-go/actions/workflows/codeql.yml)
 [![Codecov](https://codecov.io/gh/tigusigalpa/bingx-go/graph/badge.svg)](https://codecov.io/gh/tigusigalpa/bingx-go)
 [![GitHub Release](https://img.shields.io/github/v/release/tigusigalpa/bingx-go?style=flat-square)](https://github.com/tigusigalpa/bingx-go/releases)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue?style=flat-square&logo=go)](https://pkg.go.dev/github.com/tigusigalpa/bingx-go/v2)
-
-</div>
 
 Go client for the [BingX](https://bingx.com) cryptocurrency exchange API v3. Covers USDT-M and Coin-M perpetual futures,
 TradFi (stocks, forex, commodities, indices), spot trading, copy trading, sub-accounts, and WebSocket streaming.
@@ -25,8 +24,6 @@ TradFi (stocks, forex, commodities, indices), spot trading, copy trading, sub-ac
 
 ### 🚀 Quick Links
 
-- **[API v3 Migration Guide](API_V3_MIGRATION.md)** - Complete guide for upgrading to v3
-- **[v3 Update Summary](V3_UPDATE_SUMMARY.md)** - Technical details of all v3 changes
 - **[Changelog](CHANGELOG.md)** - Version history and release notes
 - **[Examples](examples/)** - Working code examples
 
@@ -66,134 +63,6 @@ TradFi (stocks, forex, commodities, indices), spot trading, copy trading, sub-ac
 ---
 
 ## Features
-
-### Service coverage
-
-<table>
-<tr>
-<td width="50%" valign="top">
-
-#### USDT-M Perpetual Futures
-
-- **Market Service** (45+ methods)
-    - Real-time & historical prices
-    - Market depth & order books
-    - Candlestick data (K-lines)
-    - 24hr tickers & statistics
-    - Funding rates & premium index
-    - Aggregate & recent trades
-    - Long/short ratios
-    - Basis data & sentiment analysis
-
-- **Account Service** (25+ methods)
-    - Balance & asset management
-    - Position tracking & monitoring
-    - Leverage configuration
-    - Margin mode management
-    - Trading fees & commissions
-    - API permissions & rate limits
-    - Balance history & deposits
-
-- **Trade Service** (35+ methods)
-    - Order creation & management (incl. TWAP orders)
-    - Batch order operations
-    - Order modification & cancellation
-    - Position management & one-click reverse
-    - Multi-assets mode support
-    - Hedge mode auto margin addition
-    - Trade history & analytics
-    - Test orders (sandbox)
-    - Commission calculations
-
-- **Wallet Service** (6+ methods)
-    - Deposit & withdrawal management
-    - Address generation
-    - Transaction history
-    - Multi-coin support
-    - Network selection
-
-</td>
-<td width="50%" valign="top">
-
-#### **Advanced Features**
-
-- **Spot Account Service** (8+ methods)
-    - Spot balance management
-    - Universal transfers
-    - Internal transfers
-    - Transfer history
-    - Multi-account support
-
-- **Sub-Account Service** (20+ methods)
-    - Sub-account creation & management
-    - API key management
-    - Asset transfers
-    - Deposit address management
-    - Authorization controls
-
-- **Copy Trading Service** (13+ methods)
-    - Futures copy trading
-    - Spot copy trading
-    - Profit tracking
-    - Commission management
-    - Trading pair configuration
-
-- **Contract Service** (3+ methods)
-    - Standard contract positions
-    - Order history
-    - Balance queries
-
-- **Listen Key Service** (3+ methods)
-    - WebSocket authentication
-    - Key generation & extension
-    - Session management
-
-#### **Coin-M Perpetual Futures**
-
-- **Coin-M Market** (6+ methods)
-    - Contract specifications
-    - Ticker & price data
-    - Market depth
-    - K-line data
-    - Open interest
-    - Funding rates
-
-- **Coin-M Trade** (17+ methods)
-    - Order management
-    - Position tracking
-    - Leverage & margin
-    - Balance queries
-    - Trade history
-
-#### **TradFi (Traditional Finance)** ⭐
-
-- **TradFi Market** (15+ methods)
-    - Stock tokens (TSLA, AAPL, NVDA)
-    - Forex pairs (EUR-USD, GBP-USD)
-    - Commodities (GOLD, SILVER, OIL)
-    - Stock indices (SPX, DJI, NDX)
-    - Real-time & historical prices
-    - Market depth & order books
-    - Candlestick data (K-lines)
-    - Funding rates & open interest
-
-- **TradFi Trade** (20+ methods)
-    - Order management (same as crypto perpetuals)
-    - TWAP orders for large trades
-    - Position management & one-click reverse
-    - Leverage & margin configuration
-    - Trade history & analytics
-
-- **TradFi Account** (15+ methods)
-    - Balance & position tracking
-    - Position risk monitoring
-    - Income history (PNL, funding, commissions)
-    - Hedge/One-way mode support
-    - Multi-assets margin mode
-
-</td>
-</tr>
-</table>
 
 ### Key capabilities
 
@@ -1175,8 +1044,6 @@ fmt.Println("Best ask:", ticker.AskPrice)
 
 No code changes required! All existing code continues to work. New features are opt-in.
 
-For detailed migration guide, see [API_V3_MIGRATION.md](API_V3_MIGRATION.md)
-
 ---
 
 ## Configuration
@@ -1700,8 +1567,6 @@ The library includes a GitHub Actions workflow (`.github/workflows/test.yml`) th
 
 For detailed testing information, see:
 
-- **[TESTING.md](TESTING.md)** - Comprehensive testing guide with examples
-- **[TEST_SUMMARY.md](TEST_SUMMARY.md)** - Complete test coverage overview
 - **[testdata/README.md](testdata/README.md)** - Test fixtures and mock data guide
 
 ### Writing Tests

@@ -14,6 +14,7 @@
 # Local Go build and test caches
 .gocache/
 .gotmp/
+.tmp-go-cache/
 coverage/
 test-results/
 
