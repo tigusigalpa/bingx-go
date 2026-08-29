@@ -49,7 +49,6 @@ const (
 type SpotOrderRequest struct {
 	Symbol        string
 	Side          string
-// string represents a BingX API component or value.
 	Type          string
 	Quantity      string
 	Price         *string
