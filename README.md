@@ -6,7 +6,6 @@
 [![Tests](https://github.com/tigusigalpa/bingx-go/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/tigusigalpa/bingx-go/actions/workflows/test.yml)
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/tigusigalpa/bingx-go/v2?style=flat-square)](https://goreportcard.com/report/github.com/tigusigalpa/bingx-go/v2)
 [![CodeQL](https://github.com/tigusigalpa/bingx-go/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/tigusigalpa/bingx-go/actions/workflows/codeql.yml)
 [![Codecov](https://codecov.io/gh/tigusigalpa/bingx-go/graph/badge.svg)](https://codecov.io/gh/tigusigalpa/bingx-go)
 [![GitHub Release](https://img.shields.io/github/v/release/tigusigalpa/bingx-go?style=flat-square)](https://github.com/tigusigalpa/bingx-go/releases)
@@ -25,7 +24,7 @@ TradFi (stocks, forex, commodities, indices), spot trading, copy trading, sub-ac
 ### 🚀 Quick Links
 
 - **[Changelog](CHANGELOG.md)** - Version history and release notes
-- **[Examples](examples/)** - Working code examples
+- **[Examples](examples)** - Working code examples
 
 ## Table of Contents
 
@@ -1562,12 +1561,6 @@ The library includes a GitHub Actions workflow (`.github/workflows/test.yml`) th
 - Generates coverage reports
 - Runs linting checks
 - Uploads coverage to Codecov
-
-### Test Documentation
-
-For detailed testing information, see:
-
-- **[testdata/README.md](testdata/README.md)** - Test fixtures and mock data guide
 
 ### Writing Tests
 

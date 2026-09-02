@@ -1,3 +1,6 @@
+ignore:
+  - "examples/**/*"
+
 coverage:
   status:
     project:
@@ -5,14 +8,12 @@ coverage:
         target: 80%
         threshold: 0%
         flags:
-          - unit
+          - unittests
     patch:
       default:
         target: 80%
         threshold: 0%
         flags:
-          - unit
+          - unittests
 
 comment: false
-ignore:
-  - "examples/**"
