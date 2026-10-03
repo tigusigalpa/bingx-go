@@ -162,6 +162,19 @@ func TestSubscribeDepth(t *testing.T) {
 	}
 }
 
+func TestSubscribeDepthAtValidatesProtocolIntervals(t *testing.T) {
+	stream := NewMarketDataStream()
+	if err := stream.SubscribeDepthAt("SOL-USDT", 20, 200*time.Millisecond); err == nil {
+		t.Fatal("expected 200ms SOL depth subscription to be rejected")
+	}
+	if err := stream.SubscribeDepthAt("BTC-USDT", 20, 300*time.Millisecond); err == nil {
+		t.Fatal("expected unsupported depth interval to be rejected")
+	}
+	if err := stream.SubscribeDepthAt("BTC-USDT", 20, 200*time.Millisecond); err == nil {
+		t.Fatal("expected a valid, disconnected subscription to reach the connection error")
+	}
+}
+
 func TestSubscribeTicker(t *testing.T) {
 	stream := NewMarketDataStream()
 

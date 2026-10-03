@@ -1,6 +1,9 @@
 package websocket
 
 import (
+	"bytes"
+	"compress/gzip"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,6 +13,132 @@ import (
 
 	"github.com/gorilla/websocket"
 )
+
+func gzipPayload(t *testing.T, payload []byte) []byte {
+	t.Helper()
+	var compressed bytes.Buffer
+	writer := gzip.NewWriter(&compressed)
+	if _, err := writer.Write(payload); err != nil {
+		t.Fatalf("compress payload: %v", err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatalf("close gzip writer: %v", err)
+	}
+	return compressed.Bytes()
+}
+
+func TestListenRespondsToGzipPingWithTextPong(t *testing.T) {
+	upgrader := websocket.Upgrader{}
+	pong := make(chan string, 1)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		defer func() { _ = conn.Close() }()
+		if err := conn.WriteMessage(websocket.BinaryMessage, gzipPayload(t, []byte("Ping"))); err != nil {
+			t.Errorf("write ping: %v", err)
+			return
+		}
+		messageType, message, err := conn.ReadMessage()
+		if err != nil {
+			t.Errorf("read pong: %v", err)
+			return
+		}
+		pong <- fmt.Sprintf("%d:%s", messageType, message)
+	}))
+	defer server.Close()
+
+	client := NewClient("ws" + strings.TrimPrefix(server.URL, "http"))
+	if err := client.Connect(); err != nil {
+		t.Fatalf("connect: %v", err)
+	}
+	defer func() { _ = client.Disconnect() }()
+	listenDone := make(chan error, 1)
+	go func() { listenDone <- client.Listen() }()
+
+	select {
+	case got := <-pong:
+		if got != "1:Pong" {
+			t.Fatalf("unexpected heartbeat response: %s", got)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("did not receive Pong")
+	}
+	_ = client.Disconnect()
+	<-listenDone
+}
+
+func TestListenDeliversDecompressedRawPayloadBeforeDecode(t *testing.T) {
+	upgrader := websocket.Upgrader{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		defer func() { _ = conn.Close() }()
+		if err := conn.WriteMessage(websocket.BinaryMessage, gzipPayload(t, []byte(`{"event":"ack"}`))); err != nil {
+			t.Errorf("write event: %v", err)
+			return
+		}
+		_, _, _ = conn.ReadMessage()
+	}))
+	defer server.Close()
+
+	client := NewClient("ws" + strings.TrimPrefix(server.URL, "http"))
+	if err := client.Connect(); err != nil {
+		t.Fatalf("connect: %v", err)
+	}
+	defer func() { _ = client.Disconnect() }()
+	raw := make(chan []byte, 1)
+	receivedAt := make(chan time.Time, 1)
+	client.OnRawMessage(func(payload []byte, at time.Time) {
+		raw <- payload
+		receivedAt <- at
+	})
+	listenDone := make(chan error, 1)
+	go func() { listenDone <- client.Listen() }()
+
+	select {
+	case payload := <-raw:
+		if got, want := string(payload), `{"event":"ack"}`; got != want {
+			t.Fatalf("unexpected raw payload: %q", got)
+		}
+		if (<-receivedAt).IsZero() {
+			t.Fatal("raw payload receipt time is zero")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("raw handler was not called")
+	}
+	if err := client.Disconnect(); err != nil {
+		t.Fatalf("disconnect: %v", err)
+	}
+	<-listenDone
+}
+
+func TestListenReturnsMalformedGzipError(t *testing.T) {
+	upgrader := websocket.Upgrader{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		defer func() { _ = conn.Close() }()
+		if err := conn.WriteMessage(websocket.BinaryMessage, []byte{0x1f, 0x8b, 0x00}); err != nil {
+			t.Errorf("write malformed gzip: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	client := NewClient("ws" + strings.TrimPrefix(server.URL, "http"))
+	if err := client.Connect(); err != nil {
+		t.Fatalf("connect: %v", err)
+	}
+	defer func() { _ = client.Disconnect() }()
+	if err := client.Listen(); err == nil || !strings.Contains(err.Error(), "decompress") {
+		t.Fatalf("expected observable gzip error, got %v", err)
+	}
+}
 
 // TestSend_DoesNotHoldStateLock_WhileWriting is a regression guard for #4.
 // If Send held c.mu (RWMutex) for the duration of WriteMessage, a slow

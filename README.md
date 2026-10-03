@@ -1030,6 +1030,23 @@ fmt.Println("Best bid:", ticker.BidPrice)
 fmt.Println("Best ask:", ticker.AskPrice)
 ```
 
+### Raw market responses and cancellation
+
+For data provenance or cancellation-sensitive workflows, use the `...Raw` market methods. They accept a `context.Context` and return the exact HTTP body without a second request or JSON re-encoding.
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+
+response, err := client.Market().GetKlinesRaw(ctx, "BTC-USDT", "1h", 100, nil, nil)
+if err != nil {
+    return err
+}
+fmt.Printf("retrieved at %s: %s\n", response.RetrievedAt, response.Body)
+```
+
+Raw variants are available for futures klines, recent and aggregate trades, open interest, premium-index snapshots, funding rates, and mark-price candles. `GetFundingRatesRaw` uses `/openApi/swap/v2/quote/fundingRate`; `GetMarkPriceKlinesRaw` uses `/openApi/swap/v1/market/markPriceKlines`. A premium-index response is a snapshot, not an index-candle series.
+
 ### 📊 v3 Statistics
 
 - **50+ new methods** across all services (including TradFi)

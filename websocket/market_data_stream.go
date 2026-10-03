@@ -38,6 +38,30 @@ func (m *MarketDataStream) SubscribeDepth(symbol string, levels int, id ...strin
 	return m.Subscribe(requestID, fmt.Sprintf("%s@depth%d", symbol, levels))
 }
 
+// SubscribeDepthAt subscribes to a depth stream at one of BingX's supported intervals.
+func (m *MarketDataStream) SubscribeDepthAt(symbol string, levels int, interval time.Duration, id ...string) error {
+	if err := validateDepthInterval(symbol, interval); err != nil {
+		return err
+	}
+	requestID := m.generateID(id...)
+	return m.Subscribe(requestID, fmt.Sprintf("%s@depth%d@%dms", symbol, levels, interval.Milliseconds()))
+}
+
+// SubscribeIncrementalDepth subscribes to incremental order-book updates.
+func (m *MarketDataStream) SubscribeIncrementalDepth(symbol string, id ...string) error {
+	return m.Subscribe(m.generateID(id...), fmt.Sprintf("%s@incrDepth", symbol))
+}
+
+// SubscribeLastPrice subscribes to last-price updates.
+func (m *MarketDataStream) SubscribeLastPrice(symbol string, id ...string) error {
+	return m.Subscribe(m.generateID(id...), fmt.Sprintf("%s@lastPrice", symbol))
+}
+
+// SubscribeMarkPrice subscribes to mark-price updates.
+func (m *MarketDataStream) SubscribeMarkPrice(symbol string, id ...string) error {
+	return m.Subscribe(m.generateID(id...), fmt.Sprintf("%s@markPrice", symbol))
+}
+
 // SubscribeTicker performs the SubscribeTicker operation.
 func (m *MarketDataStream) SubscribeTicker(symbol string, id ...string) error {
 	requestID := m.generateID(id...)
@@ -66,6 +90,39 @@ func (m *MarketDataStream) UnsubscribeKline(symbol, interval string, id ...strin
 func (m *MarketDataStream) UnsubscribeDepth(symbol string, levels int, id ...string) error {
 	requestID := m.generateID(id...)
 	return m.Unsubscribe(requestID, fmt.Sprintf("%s@depth%d", symbol, levels))
+}
+
+// UnsubscribeDepthAt unsubscribes from a depth stream at one of BingX's supported intervals.
+func (m *MarketDataStream) UnsubscribeDepthAt(symbol string, levels int, interval time.Duration, id ...string) error {
+	if err := validateDepthInterval(symbol, interval); err != nil {
+		return err
+	}
+	return m.Unsubscribe(m.generateID(id...), fmt.Sprintf("%s@depth%d@%dms", symbol, levels, interval.Milliseconds()))
+}
+
+func validateDepthInterval(symbol string, interval time.Duration) error {
+	if interval != 200*time.Millisecond && interval != 500*time.Millisecond {
+		return fmt.Errorf("unsupported depth interval %s: use 200ms or 500ms", interval)
+	}
+	if interval == 200*time.Millisecond && symbol != "BTC-USDT" && symbol != "ETH-USDT" {
+		return fmt.Errorf("unsupported 200ms depth interval for %s: use 500ms", symbol)
+	}
+	return nil
+}
+
+// UnsubscribeIncrementalDepth unsubscribes from incremental order-book updates.
+func (m *MarketDataStream) UnsubscribeIncrementalDepth(symbol string, id ...string) error {
+	return m.Unsubscribe(m.generateID(id...), fmt.Sprintf("%s@incrDepth", symbol))
+}
+
+// UnsubscribeLastPrice unsubscribes from last-price updates.
+func (m *MarketDataStream) UnsubscribeLastPrice(symbol string, id ...string) error {
+	return m.Unsubscribe(m.generateID(id...), fmt.Sprintf("%s@lastPrice", symbol))
+}
+
+// UnsubscribeMarkPrice unsubscribes from mark-price updates.
+func (m *MarketDataStream) UnsubscribeMarkPrice(symbol string, id ...string) error {
+	return m.Unsubscribe(m.generateID(id...), fmt.Sprintf("%s@markPrice", symbol))
 }
 
 // UnsubscribeTicker performs the UnsubscribeTicker operation.

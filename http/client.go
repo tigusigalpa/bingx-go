@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -27,6 +28,12 @@ type BaseHTTPClient struct {
 	sourceKey         string
 	signatureEncoding string
 	httpClient        *http.Client
+}
+
+// RawResponse is the unmodified HTTP response payload and the time it was read.
+type RawResponse struct {
+	Body        []byte
+	RetrievedAt time.Time
 }
 
 // NewBaseHTTPClient creates a new client or service instance.
@@ -218,7 +225,7 @@ func (c *BaseHTTPClient) handleAPIError(response map[string]interface{}) error {
 
 // Request performs the Request operation.
 func (c *BaseHTTPClient) Request(method, path string, params map[string]interface{}) (map[string]interface{}, error) {
-	body, err := c.requestBody(method, path, params)
+	body, _, err := c.requestBody(context.Background(), method, path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +240,7 @@ func (c *BaseHTTPClient) Request(method, path string, params map[string]interfac
 
 // RequestJSON performs the RequestJSON operation.
 func (c *BaseHTTPClient) RequestJSON(method, path string, params map[string]interface{}, result interface{}) error {
-	body, err := c.requestBody(method, path, params)
+	body, _, err := c.requestBody(context.Background(), method, path, params)
 	if err != nil {
 		return err
 	}
@@ -245,8 +252,24 @@ func (c *BaseHTTPClient) RequestJSON(method, path string, params map[string]inte
 	return nil
 }
 
+// RequestRaw executes a request with ctx and returns its exact response body.
+func (c *BaseHTTPClient) RequestRaw(ctx context.Context, method, path string, params map[string]interface{}) (*RawResponse, error) {
+	body, retrievedAt, err := c.requestBody(ctx, method, path, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RawResponse{
+		Body:        append([]byte(nil), body...),
+		RetrievedAt: retrievedAt,
+	}, nil
+}
+
 // requestBody performs the requestBody operation.
-func (c *BaseHTTPClient) requestBody(method, path string, params map[string]interface{}) ([]byte, error) {
+func (c *BaseHTTPClient) requestBody(ctx context.Context, method, path string, params map[string]interface{}) ([]byte, time.Time, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	method = strings.ToUpper(method)
 
 	// Do not add the generated timestamp to the caller's map. Reusing a map
@@ -277,16 +300,16 @@ func (c *BaseHTTPClient) requestBody(method, path string, params map[string]inte
 		// the canonical signing string remains raw.
 		query := c.buildSignedString(requestParams, signature, true)
 		fullURL = fullURL + "?" + query
-		req, err = http.NewRequest(method, fullURL, nil)
+		req, err = http.NewRequestWithContext(ctx, method, fullURL, nil)
 	} else {
 		// POST/PUT bodies are form-urlencoded. The canonical string is sent as-is
 		// (raw) followed by the signature.
 		body := c.buildSignedString(requestParams, signature, false)
-		req, err = http.NewRequest(method, fullURL, bytes.NewBufferString(body))
+		req, err = http.NewRequestWithContext(ctx, method, fullURL, bytes.NewBufferString(body))
 	}
 
 	if err != nil {
-		return nil, errors.NewBingXException("Failed to create request: "+err.Error(), 0, nil)
+		return nil, time.Time{}, errors.NewBingXException("Failed to create request: "+err.Error(), 0, nil)
 	}
 
 	for k, v := range c.headers() {
@@ -295,33 +318,34 @@ func (c *BaseHTTPClient) requestBody(method, path string, params map[string]inte
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, errors.NewBingXException("HTTP request failed: "+err.Error(), 0, nil)
+		return nil, time.Time{}, errors.NewBingXException("HTTP request failed: "+err.Error(), 0, nil)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.NewBingXException("Failed to read response: "+err.Error(), 0, nil)
+		return nil, time.Time{}, errors.NewBingXException("Failed to read response: "+err.Error(), 0, nil)
 	}
+	retrievedAt := time.Now()
 
 	var data map[string]interface{}
 	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, errors.NewBingXException("Invalid JSON response from API", 0, map[string]interface{}{"raw": string(body)})
+		return nil, retrievedAt, errors.NewBingXException("Invalid JSON response from API", 0, map[string]interface{}{"raw": string(body)})
 	}
 
 	if err := c.handleAPIError(data); err != nil {
-		return nil, err
+		return nil, retrievedAt, err
 	}
 
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		return nil, errors.NewBingXException(
+		return nil, retrievedAt, errors.NewBingXException(
 			fmt.Sprintf("HTTP request failed with status %s", resp.Status),
 			resp.StatusCode,
 			data,
 		)
 	}
 
-	return body, nil
+	return body, retrievedAt, nil
 }
 
 // GetEndpoint performs the GetEndpoint operation.

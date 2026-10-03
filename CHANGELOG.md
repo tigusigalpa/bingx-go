@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Context-aware market `...Raw` methods returning exact response bytes with their retrieval time for klines, trades, open interest, premium-index snapshots, funding rates, and mark-price candles.
+- WebSocket `OnRawMessage` callback for copied, decompressed data and acknowledgement frames before JSON decoding.
+- Validated market-stream helpers for depth intervals, incremental depth, last price, and mark price.
+
+### Fixed
+
+- WebSocket literal `Ping` heartbeats, including GZIP-compressed frames, now receive a text `Pong`; malformed GZIP frames are returned from `Listen()` instead of being silently discarded.
+- Funding-rate requests now use `/openApi/swap/v2/quote/fundingRate`; mark-price candles use `/openApi/swap/v1/market/markPriceKlines`.
+
 ## [2.3.6] - 2026-08-09
 
 ### Added

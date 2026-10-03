@@ -8,7 +8,7 @@ This package provides WebSocket streaming functionality for BingX API, supportin
 
 - **Market Data Stream**: Real-time public market data (trades, klines, depth, tickers)
 - **Account Data Stream**: Real-time private account updates (balance, positions, orders)
-- **Automatic Ping/Pong**: Handles WebSocket keep-alive automatically
+- **Protocol-correct Ping/Pong**: Responds to literal (including GZIP-compressed) `Ping` with text `Pong`
 - **GZIP Decompression**: Automatically decompresses gzipped messages
 - **Thread-Safe**: Safe for concurrent use
 - **Explicit lifecycle**: `Disconnect()` is idempotent and a client can be connected again after disconnecting
@@ -84,6 +84,16 @@ if err := stream.Subscribe("prices", "BTC-USDT@ticker"); err != nil {
 return stream.Listen() // blocks until Disconnect, a read error, or a close frame
 ```
 
+### Raw payloads and provenance
+
+`OnRawMessage` receives a separate copy of every decompressed data or acknowledgement payload before JSON decoding, together with the local receipt time. Payloads are bounded to 16 MiB before callback delivery. It is intended for auditing or persistence; keep the callback short because it runs on the listener goroutine. Literal heartbeat frames are handled internally and are not delivered to this callback.
+
+```go
+stream.OnRawMessage(func(payload []byte, receivedAt time.Time) {
+    persist(payload, receivedAt)
+})
+```
+
 ### Available Subscriptions
 
 #### Trade Updates
@@ -104,6 +114,15 @@ stream.UnsubscribeKline("BTC-USDT", "1m")
 // Levels: 5, 10, 20, 50, 100
 stream.SubscribeDepth("BTC-USDT", 20)
 stream.UnsubscribeDepth("BTC-USDT", 20)
+
+// Explicit intervals supported by the market protocol. 200ms is limited to BTC-USDT and ETH-USDT.
+stream.SubscribeDepthAt("BTC-USDT", 20, 200*time.Millisecond)
+stream.UnsubscribeDepthAt("BTC-USDT", 20, 200*time.Millisecond)
+
+// Incremental order-book, last-price, and mark-price streams.
+stream.SubscribeIncrementalDepth("BTC-USDT")
+stream.SubscribeLastPrice("BTC-USDT")
+stream.SubscribeMarkPrice("BTC-USDT")
 ```
 
 #### 24hr Ticker Updates
@@ -294,7 +313,7 @@ if err := stream.Listen(); err != nil {
 }
 ```
 
-`Listen()` is blocking. A server close, read error, or failed pong response is returned to the caller. The package does not reconnect automatically; create your own retry/backoff loop if the application requires persistent connectivity.
+`Listen()` is blocking. A server close, read error, malformed GZIP payload, or failed pong response is returned to the caller. Calling `Listen()` concurrently on the same client returns an error. The package does not reconnect automatically; create your own retry/backoff loop if the application requires persistent connectivity.
 
 ## Message and Subscription Protocol
 

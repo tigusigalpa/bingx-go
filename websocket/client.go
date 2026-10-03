@@ -12,16 +12,22 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const maxWebSocketMessageSize = 16 << 20
+
 // MessageCallback represents a BingX API component or value.
 type MessageCallback func(data map[string]interface{})
 
+// RawMessageHandler receives a copy of the decompressed payload before JSON decoding.
+type RawMessageHandler func(payload []byte, receivedAt time.Time)
+
 // Client manages a connection to a BingX WebSocket endpoint.
 type Client struct {
-	url       string
-	conn      *websocket.Conn
-	callbacks []MessageCallback
-	running   bool
-	mu        sync.RWMutex
+	url         string
+	conn        *websocket.Conn
+	callbacks   []MessageCallback
+	rawHandlers []RawMessageHandler
+	running     bool
+	mu          sync.RWMutex
 	// writeMu serializes WriteMessage calls. gorilla/websocket allows only
 	// one concurrent writer per connection. Held independently of mu so a
 	// long network write can't pin the state mutex and block reconnects.
@@ -32,10 +38,23 @@ type Client struct {
 // NewClient creates a WebSocket client for url.
 func NewClient(url string) *Client {
 	return &Client{
-		url:       url,
-		callbacks: make([]MessageCallback, 0),
-		done:      make(chan struct{}),
+		url:         url,
+		callbacks:   make([]MessageCallback, 0),
+		rawHandlers: make([]RawMessageHandler, 0),
+		done:        make(chan struct{}),
 	}
+}
+
+// OnRawMessage registers a handler for decompressed text and binary messages.
+// The handler receives its own immutable copy of the payload and must return promptly.
+func (c *Client) OnRawMessage(handler RawMessageHandler) {
+	if handler == nil {
+		return
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.rawHandlers = append(c.rawHandlers, handler)
 }
 
 // Connect performs the Connect operation.
@@ -54,6 +73,7 @@ func (c *Client) Connect() error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to WebSocket: %w", err)
 	}
+	conn.SetReadLimit(maxWebSocketMessageSize)
 
 	c.conn = conn
 	// Disconnect closes done to wake a listener. A fresh connection needs a
@@ -143,10 +163,15 @@ func (c *Client) Listen() error {
 		c.mu.Unlock()
 		return fmt.Errorf("WebSocket client is not connected")
 	}
+	if c.running {
+		c.mu.Unlock()
+		return fmt.Errorf("WebSocket client is already listening")
+	}
 	c.running = true
 	conn := c.conn
 	done := c.done
 	c.mu.Unlock()
+	defer c.finishListen(conn)
 
 	for c.isRunning() {
 		select {
@@ -164,8 +189,18 @@ func (c *Client) Listen() error {
 			if messageType == websocket.BinaryMessage || messageType == websocket.TextMessage {
 				data, err := c.decompressMessage(message)
 				if err != nil {
+					return fmt.Errorf("failed to decompress WebSocket message: %w", err)
+				}
+
+				receivedAt := time.Now()
+				if bytes.Equal(bytes.TrimSpace(data), []byte("Ping")) {
+					if err := c.sendText([]byte("Pong")); err != nil {
+						return fmt.Errorf("failed to respond to WebSocket ping: %w", err)
+					}
 					continue
 				}
+
+				c.dispatchRawMessage(data, receivedAt)
 
 				var parsed map[string]interface{}
 				if err := json.Unmarshal(data, &parsed); err != nil {
@@ -194,6 +229,30 @@ func (c *Client) Listen() error {
 	return nil
 }
 
+func (c *Client) sendText(message []byte) error {
+	c.mu.RLock()
+	conn := c.conn
+	c.mu.RUnlock()
+	if conn == nil {
+		return fmt.Errorf("WebSocket client is not connected")
+	}
+
+	c.writeMu.Lock()
+	defer c.writeMu.Unlock()
+	return conn.WriteMessage(websocket.TextMessage, message)
+}
+
+func (c *Client) dispatchRawMessage(data []byte, receivedAt time.Time) {
+	c.mu.RLock()
+	handlers := make([]RawMessageHandler, len(c.rawHandlers))
+	copy(handlers, c.rawHandlers)
+	c.mu.RUnlock()
+
+	for _, handler := range handlers {
+		handler(append([]byte(nil), data...), receivedAt)
+	}
+}
+
 // decompressMessage performs the decompressMessage operation.
 func (c *Client) decompressMessage(message []byte) ([]byte, error) {
 	if len(message) >= 2 && message[0] == 0x1f && message[1] == 0x8b {
@@ -203,9 +262,12 @@ func (c *Client) decompressMessage(message []byte) ([]byte, error) {
 		}
 		defer func() { _ = reader.Close() }()
 
-		decompressed, err := io.ReadAll(reader)
+		decompressed, err := io.ReadAll(io.LimitReader(reader, maxWebSocketMessageSize+1))
 		if err != nil {
 			return nil, err
+		}
+		if len(decompressed) > maxWebSocketMessageSize {
+			return nil, fmt.Errorf("decompressed WebSocket message exceeds %d bytes", maxWebSocketMessageSize)
 		}
 		return decompressed, nil
 	}
@@ -225,6 +287,14 @@ func (c *Client) Stop() {
 	c.mu.Lock()
 	c.running = false
 	c.mu.Unlock()
+}
+
+func (c *Client) finishListen(conn *websocket.Conn) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.conn == conn {
+		c.running = false
+	}
 }
 
 // isRunning performs the isRunning operation.

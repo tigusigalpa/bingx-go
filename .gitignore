@@ -1,45 +1,188 @@
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+# AI-KIT v0.1: place this file at the project repository root.
+# Keep project source, migrations, ordinary docs, CI, and lockfiles under version control.
 
-# Test binary, built with `go test -c`
-*.test
+# ---- AI-KIT and agent instructions (private, local to each checkout) ----
+AGENTS.md
+AGENTS.override.md
+CLAUDE.md
+KIMI.md
+MANUS.md
+GEMINI.md
+SKILL.md
+AI_CONTEXT.md
+PROJECT_CONTEXT.md
+BOOTSTRAP_PROMPT.md
+/WIKI.md
+/ai-kit/
+/.agents/
+/.ai/
+/.codex/
+/.cursor/
+/.windsurf/
+/.windsurfrules
+/.cursorrules
+/.github/copilot-instructions.md
+/.github/instructions/
+/.github/prompts/
+/.github/agents/
+/docs/DECISIONS.md
+/docs/adr/0000-template.md
+/AI-KIT*/
 
-# Output of the go coverage tool
-*.out
+# ---- Local secrets and credentials ----
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.dist
+!.env.*.dist
+.envrc
+auth.json
+/.secrets/
+/secrets/
+*.pem
+*.p12
+*.pfx
+*.private.key
+id_rsa*
+id_ed25519*
 
-# Local Go build and test caches
-.gocache/
-.gotmp/
-.tmp-go-cache/
-coverage/
-test-results/
-
-# Dependency directories
-vendor/
-
-# Go workspace file
-go.work
-
-# IDE
-.idea/
-.vscode/
+# ---- OS, editor, and temporary files ----
+.DS_Store
+Thumbs.db
+Desktop.ini
 *.swp
 *.swo
 *~
+*.tmp
+*.bak
+.idea/
+.vscode/
+.fleet/
+.history/
 
-# OS
-.DS_Store
-Thumbs.db
+# ---- Dependency installs and frontend build output ----
+vendor/
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/install-state.gz
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+/build/
+/dist/
+/out/
+/tmp/
+/temp/
 
-# Environment
-.env
-.env.local
-.env.*.local
+# ---- PHP / Laravel ----
+.phpunit.cache/
+.phpunit.result.cache
+.phpactor.json
+/coverage/
+/clover.xml
+/phpunit-coverage.xml
+/bootstrap/cache/*.php
+/public/hot
+/public/storage
+/public/build/
+/public_html/hot
+/public_html/storage
+/public_html/build/
+/storage/*.key
+/storage/pail/
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/app/private/*
+!/storage/app/private/.gitignore
+/database/database.sqlite
+/database/database.sqlite-*
 
-# Build
-dist/
-build/
+# ---- Moodle installation (do not ignore plugin source) ----
+/config.php
+/behat.yml
+/moodledata/
+/behat_dataroot/
+/phpunit_dataroot/
+/moodle-plugin-ci.phar
+
+# ---- Go build, profiling, and coverage output ----
+go-cache
+.go-cache
+gocache
+.gocache
+go-build
+.go-build
+/.cache/go-build/
+/pkg/mod/
+/go/pkg/mod/
+*.exe
+*.exe~
+*.test
+*.out
+*.prof
+*.coverprofile
+/cpu.prof
+/mem.prof
+/bin/
+
+# ---- Python environments, caches, and generated packages ----
+.venv/
+venv/
+__pypackages__/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+.hypothesis/
+.tox/
+.nox/
+.ipynb_checkpoints/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.egg-info/
+.eggs/
+*.egg
+*.whl
+pip-wheel-metadata/
+pip-log.txt
+pip-delete-this-directory.txt
+/.cache/pip/
+/.cache/uv/
+/.cache/pypoetry/
+.pypirc
+
+# ---- Local containers, logs, dumps, and backups ----
+/docker-compose.override.yml
+/docker-compose.override.yaml
+*.log
+*.dump
+*.sql.gz
+/dumps/
+/backups/
+
+# Deliberately track README.md, CHANGELOG.md, ordinary project docs,
+# composer.lock, go.mod, go.sum, pyproject.toml, Python lockfiles,
+# requirements files, package lockfiles, source code,
+# database migrations, and .github/workflows/.
+# For a reusable PHP library that intentionally does not track its lockfile,
+# uncomment the next line in that library only:
+# /composer.lock

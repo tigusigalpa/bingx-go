@@ -1,6 +1,13 @@
 package services
 
-import "github.com/tigusigalpa/bingx-go/v2/http"
+import (
+	"context"
+
+	"github.com/tigusigalpa/bingx-go/v2/http"
+)
+
+// RawResponse is an unmodified market API response and the time it was read.
+type RawResponse = http.RawResponse
 
 // MarketService represents a BingX API component or value.
 type MarketService struct {
@@ -79,20 +86,12 @@ func (s *MarketService) GetSpotDepth(symbol string, limit int) (map[string]inter
 
 // GetKlines performs the GetKlines operation.
 func (s *MarketService) GetKlines(symbol, interval string, limit int, startTime, endTime *int64) (map[string]interface{}, error) {
-	params := map[string]interface{}{
-		"symbol":   symbol,
-		"interval": interval,
-		"limit":    limit,
-	}
+	return s.client.Request("GET", "/openApi/swap/v3/quote/klines", klineParams(symbol, interval, limit, startTime, endTime))
+}
 
-	if startTime != nil {
-		params["startTime"] = *startTime
-	}
-	if endTime != nil {
-		params["endTime"] = *endTime
-	}
-
-	return s.client.Request("GET", "/openApi/swap/v3/quote/klines", params)
+// GetKlinesRaw retrieves futures candles with ctx and preserves the exact response body.
+func (s *MarketService) GetKlinesRaw(ctx context.Context, symbol, interval string, limit int, startTime, endTime *int64) (*RawResponse, error) {
+	return s.client.RequestRaw(ctx, "GET", "/openApi/swap/v3/quote/klines", klineParams(symbol, interval, limit, startTime, endTime))
 }
 
 // GetSpotKlines retrieves spot K-line (candlestick) data
@@ -137,12 +136,19 @@ func (s *MarketService) GetSpot24hrTicker(symbol *string) (map[string]interface{
 	return s.client.Request("GET", "/openApi/spot/v1/market/ticker/24hr", params)
 }
 
-// GetFundingRateHistory performs the GetFundingRateHistory operation.
+// GetFundingRateHistory retrieves funding-rate records. Deprecated: use GetFundingRatesRaw when response provenance is required.
 func (s *MarketService) GetFundingRateHistory(symbol string, limit int) (map[string]interface{}, error) {
-	return s.client.Request("GET", "/openApi/swap/v2/market/fundingRate/history", map[string]interface{}{
-		"symbol": symbol,
-		"limit":  limit,
-	})
+	return s.GetFundingRates(symbol, nil, nil, limit)
+}
+
+// GetFundingRates retrieves funding-rate records from the current quote endpoint.
+func (s *MarketService) GetFundingRates(symbol string, startTime, endTime *int64, limit int) (map[string]interface{}, error) {
+	return s.client.Request("GET", "/openApi/swap/v2/quote/fundingRate", fundingRateParams(symbol, startTime, endTime, limit))
+}
+
+// GetFundingRatesRaw retrieves funding-rate records with ctx and preserves the exact response body.
+func (s *MarketService) GetFundingRatesRaw(ctx context.Context, symbol string, startTime, endTime *int64, limit int) (*RawResponse, error) {
+	return s.client.RequestRaw(ctx, "GET", "/openApi/swap/v2/quote/fundingRate", fundingRateParams(symbol, startTime, endTime, limit))
 }
 
 // GetMarkPrice performs the GetMarkPrice operation.
@@ -152,42 +158,34 @@ func (s *MarketService) GetMarkPrice(symbol string) (map[string]interface{}, err
 	})
 }
 
-// GetPremiumIndexKlines performs the GetPremiumIndexKlines operation.
+// GetPremiumIndexRaw retrieves the premium-index snapshot with ctx and preserves the exact response body.
+func (s *MarketService) GetPremiumIndexRaw(ctx context.Context, symbol string) (*RawResponse, error) {
+	return s.client.RequestRaw(ctx, "GET", "/openApi/swap/v2/quote/premiumIndex", map[string]interface{}{"symbol": symbol})
+}
+
+// GetPremiumIndexKlines retrieves mark-price candles. Deprecated: use GetMarkPriceKlines.
 func (s *MarketService) GetPremiumIndexKlines(symbol, interval string, limit int, startTime, endTime *int64) (map[string]interface{}, error) {
-	params := map[string]interface{}{
-		"symbol":   symbol,
-		"interval": interval,
-		"limit":    limit,
-	}
+	return s.GetMarkPriceKlines(symbol, interval, limit, startTime, endTime)
+}
 
-	if startTime != nil {
-		params["startTime"] = *startTime
-	}
-	if endTime != nil {
-		params["endTime"] = *endTime
-	}
+// GetMarkPriceKlines retrieves mark-price candles.
+func (s *MarketService) GetMarkPriceKlines(symbol, interval string, limit int, startTime, endTime *int64) (map[string]interface{}, error) {
+	return s.client.Request("GET", "/openApi/swap/v1/market/markPriceKlines", klineParams(symbol, interval, limit, startTime, endTime))
+}
 
-	return s.client.Request("GET", "/openApi/swap/v2/market/premiumIndexKline", params)
+// GetMarkPriceKlinesRaw retrieves mark-price candles with ctx and preserves the exact response body.
+func (s *MarketService) GetMarkPriceKlinesRaw(ctx context.Context, symbol, interval string, limit int, startTime, endTime *int64) (*RawResponse, error) {
+	return s.client.RequestRaw(ctx, "GET", "/openApi/swap/v1/market/markPriceKlines", klineParams(symbol, interval, limit, startTime, endTime))
 }
 
 // GetAggregateTrades performs the GetAggregateTrades operation.
 func (s *MarketService) GetAggregateTrades(symbol string, limit int, fromID, startTime, endTime *int64) (map[string]interface{}, error) {
-	params := map[string]interface{}{
-		"symbol": symbol,
-		"limit":  limit,
-	}
+	return s.client.Request("GET", "/openApi/swap/v2/market/aggTrades", aggregateTradeParams(symbol, limit, fromID, startTime, endTime))
+}
 
-	if fromID != nil {
-		params["fromId"] = *fromID
-	}
-	if startTime != nil {
-		params["startTime"] = *startTime
-	}
-	if endTime != nil {
-		params["endTime"] = *endTime
-	}
-
-	return s.client.Request("GET", "/openApi/swap/v2/market/aggTrades", params)
+// GetAggregateTradesRaw retrieves historical ID-based trades with ctx and preserves the exact response body.
+func (s *MarketService) GetAggregateTradesRaw(ctx context.Context, symbol string, limit int, fromID, startTime, endTime *int64) (*RawResponse, error) {
+	return s.client.RequestRaw(ctx, "GET", "/openApi/swap/v2/market/aggTrades", aggregateTradeParams(symbol, limit, fromID, startTime, endTime))
 }
 
 // GetRecentTrades performs the GetRecentTrades operation.
@@ -196,6 +194,11 @@ func (s *MarketService) GetRecentTrades(symbol string, limit int) (map[string]in
 		"symbol": symbol,
 		"limit":  limit,
 	})
+}
+
+// GetRecentTradesRaw retrieves recent ID-based trades with ctx and preserves the exact response body.
+func (s *MarketService) GetRecentTradesRaw(ctx context.Context, symbol string, limit int) (*RawResponse, error) {
+	return s.client.RequestRaw(ctx, "GET", "/openApi/swap/v2/quote/trades", map[string]interface{}{"symbol": symbol, "limit": limit})
 }
 
 // GetSpotAggregateTrades performs the GetSpotAggregateTrades operation.
@@ -341,6 +344,11 @@ func (s *MarketService) GetOpenInterest(symbol string) (map[string]interface{}, 
 	})
 }
 
+// GetOpenInterestRaw retrieves open interest with ctx and preserves the exact response body.
+func (s *MarketService) GetOpenInterestRaw(ctx context.Context, symbol string) (*RawResponse, error) {
+	return s.client.RequestRaw(ctx, "GET", "/openApi/swap/v2/quote/openInterest", map[string]interface{}{"symbol": symbol})
+}
+
 // GetOpenInterestHistory performs the GetOpenInterestHistory operation.
 func (s *MarketService) GetOpenInterestHistory(symbol, period string, limit int, startTime, endTime *int64) (map[string]interface{}, error) {
 	params := map[string]interface{}{
@@ -374,6 +382,42 @@ func (s *MarketService) GetBookTicker(symbol *string) (map[string]interface{}, e
 	}
 
 	return s.client.Request("GET", "/openApi/swap/v2/quote/bookTicker", params)
+}
+
+func klineParams(symbol, interval string, limit int, startTime, endTime *int64) map[string]interface{} {
+	params := map[string]interface{}{"symbol": symbol, "interval": interval, "limit": limit}
+	if startTime != nil {
+		params["startTime"] = *startTime
+	}
+	if endTime != nil {
+		params["endTime"] = *endTime
+	}
+	return params
+}
+
+func fundingRateParams(symbol string, startTime, endTime *int64, limit int) map[string]interface{} {
+	params := map[string]interface{}{"symbol": symbol, "limit": limit}
+	if startTime != nil {
+		params["startTime"] = *startTime
+	}
+	if endTime != nil {
+		params["endTime"] = *endTime
+	}
+	return params
+}
+
+func aggregateTradeParams(symbol string, limit int, fromID, startTime, endTime *int64) map[string]interface{} {
+	params := map[string]interface{}{"symbol": symbol, "limit": limit}
+	if fromID != nil {
+		params["fromId"] = *fromID
+	}
+	if startTime != nil {
+		params["startTime"] = *startTime
+	}
+	if endTime != nil {
+		params["endTime"] = *endTime
+	}
+	return params
 }
 
 // GetSpotBookTicker performs the GetSpotBookTicker operation.
