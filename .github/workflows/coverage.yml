@@ -16,7 +16,7 @@ jobs:
       - name: Run tests with coverage
         run: go test -race -coverprofile=coverage.out ./...
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./coverage.out
           token: ${{ secrets.CODECOV_TOKEN }}
