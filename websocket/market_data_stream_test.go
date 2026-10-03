@@ -3,6 +3,7 @@ package websocket
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestNewMarketDataStream(t *testing.T) {
