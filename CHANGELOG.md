@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [2.5.0]
 
 ### Added
 
@@ -14,6 +14,10 @@ All notable changes to this project will be documented in this file.
 
 - WebSocket literal `Ping` heartbeats, including GZIP-compressed frames, now receive a text `Pong`; malformed GZIP frames are returned from `Listen()` instead of being silently discarded.
 - Funding-rate requests now use `/openApi/swap/v2/quote/fundingRate`; mark-price candles use `/openApi/swap/v1/market/markPriceKlines`.
+
+### Documentation
+
+- Updated the SDK skill reference with v2.5.0 raw REST, WebSocket provenance, heartbeat, lifecycle, and validated subscription APIs.
 
 ## [2.3.6] - 2026-08-09
 

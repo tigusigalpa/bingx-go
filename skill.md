@@ -97,6 +97,32 @@ client.Market().GetSpotKlines("BTC-USDT", "1h", 100, nil, nil, &timeZone)
 // timeZone is *int64 (UTC offset hours)
 ```
 
+### Raw Market Data and Provenance
+Use `...Raw` methods when the original response bytes, receipt time, or request cancellation matter. They accept `context.Context` and return `*services.RawResponse` without a second fetch or JSON re-encoding.
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+
+response, err := client.Market().GetKlinesRaw(ctx, "BTC-USDT", "1h", 100, nil, nil)
+if err != nil {
+    return err
+}
+// response.Body is the exact API body; response.RetrievedAt is local receipt time.
+```
+
+Available raw methods:
+
+```go
+client.Market().GetKlinesRaw(ctx, symbol, interval, limit, startTime, endTime)
+client.Market().GetRecentTradesRaw(ctx, symbol, limit)
+client.Market().GetAggregateTradesRaw(ctx, symbol, limit, fromID, startTime, endTime)
+client.Market().GetOpenInterestRaw(ctx, symbol)
+client.Market().GetPremiumIndexRaw(ctx, symbol) // snapshot, not an index-candle series
+client.Market().GetFundingRatesRaw(ctx, symbol, startTime, endTime, limit)
+client.Market().GetMarkPriceKlinesRaw(ctx, symbol, interval, limit, startTime, endTime)
+```
+
 ### 24h Ticker Statistics
 ```go
 client.Market().Get24hrTicker(&sym)   // single symbol
@@ -106,10 +132,13 @@ client.Market().Get24hrTicker(nil)    // all symbols
 
 ### Funding Rates
 ```go
-client.Market().GetFundingRateHistory("BTC-USDT", 100)
+client.Market().GetFundingRateHistory("BTC-USDT", 100) // compatibility wrapper
+client.Market().GetFundingRates("BTC-USDT", startTime, endTime, 100)
 client.Market().GetFundingRateInfo("BTC-USDT")    // current rate + next payment time (v3)
 // positive rate = longs pay shorts; negative = shorts pay longs
 ```
+
+`GetFundingRates` and `GetFundingRatesRaw` use `/openApi/swap/v2/quote/fundingRate`. For mark-price candles use `GetMarkPriceKlines` or `GetMarkPriceKlinesRaw`; `GetPremiumIndexKlines` remains a compatibility wrapper.
 
 ### Open Interest (v3)
 ```go
@@ -535,15 +564,43 @@ stream.Connect()
 stream.SubscribeTrade("BTC-USDT")
 stream.SubscribeKline("BTC-USDT", "1m")
 stream.SubscribeDepth("BTC-USDT", 20)
+stream.SubscribeDepthAt("BTC-USDT", 20, 200*time.Millisecond)
+// 200ms is only available for BTC-USDT and ETH-USDT; use 500ms otherwise.
+stream.SubscribeIncrementalDepth("BTC-USDT")
 stream.SubscribeTicker("BTC-USDT")
 stream.SubscribeBookTicker("BTC-USDT")
+stream.SubscribeLastPrice("BTC-USDT")
+stream.SubscribeMarkPrice("BTC-USDT")
 
 stream.UnsubscribeTrade("BTC-USDT")
 stream.UnsubscribeKline("BTC-USDT", "1m")
 stream.UnsubscribeDepth("BTC-USDT", 20)
+stream.UnsubscribeDepthAt("BTC-USDT", 20, 200*time.Millisecond)
+stream.UnsubscribeIncrementalDepth("BTC-USDT")
 stream.UnsubscribeTicker("BTC-USDT")
 stream.UnsubscribeBookTicker("BTC-USDT")
+stream.UnsubscribeLastPrice("BTC-USDT")
+stream.UnsubscribeMarkPrice("BTC-USDT")
 ```
+
+### Raw WebSocket Messages and Lifecycle
+
+```go
+stream.OnRawMessage(func(payload []byte, receivedAt time.Time) {
+    // payload is a copied, decompressed ACK or data frame.
+    // Keep this callback fast: it runs on the listener goroutine.
+})
+
+if err := stream.Connect(); err != nil {
+    return err
+}
+defer func() { _ = stream.Disconnect() }()
+if err := stream.Listen(); err != nil {
+    return err // includes malformed GZIP and read errors
+}
+```
+
+Literal `Ping` heartbeats, including GZIP-compressed ones, are handled internally with a text `Pong` and are not delivered to `OnRawMessage`. Incoming and decompressed messages are limited to 16 MiB. Call `Disconnect()` to unblock `Listen()`; `Stop()` only changes listener state and does not interrupt an already-blocked read.
 
 ### Account Data Stream
 ```go
