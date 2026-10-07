@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.0] - 2026-10-07
+
+### Added
+
+- Supported HTTP-client injection and positive configurable response limits (16 MiB default), propagated through every shared service client.
+- Immutable raw receipt accessors for exact bytes, completion time, HTTP status, safe response headers, request route and safe selectors.
+- Stable oversized/incomplete response errors; complete bounded response evidence retained on raw errors, with cancellation/deadline identity preserved.
+- Synthetic boundary tests and pinned documentation fixtures: the full official reference confirms completed funding settlements, while historical trade pagination/quantity units and funding pagination completeness remain unproven.
+
+### Fixed
+
+- Replaced unbounded response reads with `limit+1` reads for success, HTTP-error and provider-error bodies.
+- Removed signed request URLs from HTTP transport diagnostics.
+
+### Documentation
+
+- Documented retry ownership, transport isolation, receipt compatibility and historical admission limits; preserved the unverified legacy aggregate-trades route without substitution.
+- Synchronized local project context and continuity instructions with the bounded receipt contract.
+
 ## [2.5.0]
 
 ### Added

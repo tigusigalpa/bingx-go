@@ -141,12 +141,15 @@ func (s *MarketService) GetFundingRateHistory(symbol string, limit int) (map[str
 	return s.GetFundingRates(symbol, nil, nil, limit)
 }
 
-// GetFundingRates retrieves funding-rate records from the current quote endpoint.
+// GetFundingRates queries completed historical funding settlement records.
+// The pinned full official reference defines fundingTime as settlement time in
+// Unix milliseconds; see docs/HTTP_RECEIPTS.md for evidence and pagination limits.
 func (s *MarketService) GetFundingRates(symbol string, startTime, endTime *int64, limit int) (map[string]interface{}, error) {
 	return s.client.Request("GET", "/openApi/swap/v2/quote/fundingRate", fundingRateParams(symbol, startTime, endTime, limit))
 }
 
-// GetFundingRatesRaw retrieves funding-rate records with ctx and preserves the exact response body.
+// GetFundingRatesRaw queries historical funding with ctx and preserves bounded
+// evidence. Settlement is documented; pagination completeness is not guaranteed.
 func (s *MarketService) GetFundingRatesRaw(ctx context.Context, symbol string, startTime, endTime *int64, limit int) (*RawResponse, error) {
 	return s.client.RequestRaw(ctx, "GET", "/openApi/swap/v2/quote/fundingRate", fundingRateParams(symbol, startTime, endTime, limit))
 }
@@ -183,7 +186,10 @@ func (s *MarketService) GetAggregateTrades(symbol string, limit int, fromID, sta
 	return s.client.Request("GET", "/openApi/swap/v2/market/aggTrades", aggregateTradeParams(symbol, limit, fromID, startTime, endTime))
 }
 
-// GetAggregateTradesRaw retrieves historical ID-based trades with ctx and preserves the exact response body.
+// GetAggregateTradesRaw preserves the legacy aggTrades route and returns bounded
+// response evidence. It is not a verified historical-trades contract or an alias
+// for /openApi/swap/v1/market/historicalTrades; pagination and quantity units are
+// unverified. See docs/HTTP_RECEIPTS.md before using it for historical admission.
 func (s *MarketService) GetAggregateTradesRaw(ctx context.Context, symbol string, limit int, fromID, startTime, endTime *int64) (*RawResponse, error) {
 	return s.client.RequestRaw(ctx, "GET", "/openApi/swap/v2/market/aggTrades", aggregateTradeParams(symbol, limit, fromID, startTime, endTime))
 }

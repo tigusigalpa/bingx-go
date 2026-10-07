@@ -28,26 +28,12 @@ type BaseHTTPClient struct {
 	sourceKey         string
 	signatureEncoding string
 	httpClient        *http.Client
-}
-
-// RawResponse is the unmodified HTTP response payload and the time it was read.
-type RawResponse struct {
-	Body        []byte
-	RetrievedAt time.Time
+	maxResponseBytes  int64
 }
 
 // NewBaseHTTPClient creates a new client or service instance.
 func NewBaseHTTPClient(apiKey, apiSecret, baseURI, sourceKey, signatureEncoding string) *BaseHTTPClient {
-	return &BaseHTTPClient{
-		apiKey:            apiKey,
-		apiSecret:         apiSecret,
-		baseURI:           baseURI,
-		sourceKey:         sourceKey,
-		signatureEncoding: signatureEncoding,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-	}
+	return NewBaseHTTPClientWithOptions(apiKey, apiSecret, baseURI, sourceKey, signatureEncoding)
 }
 
 // timestamp performs the timestamp operation.
@@ -204,9 +190,20 @@ func (c *BaseHTTPClient) handleAPIError(response map[string]interface{}) error {
 	}
 
 	codeStr := fmt.Sprintf("%v", code)
+	if _, err := strconv.ParseInt(codeStr, 10, 64); err != nil {
+		codeStr = "unknown"
+	}
 	message := "Unknown API error"
 	if msg, ok := response["msg"].(string); ok {
 		message = msg
+	}
+	if strings.Contains(strings.ToLower(message), "signature=") || strings.Contains(strings.ToLower(message), "signature%3d") {
+		message = "Provider request rejected"
+	}
+	for _, secret := range []string{c.apiKey, c.apiSecret} {
+		if secret != "" {
+			message = strings.ReplaceAll(message, secret, "[redacted]")
+		}
 	}
 
 	switch codeStr {
@@ -225,14 +222,14 @@ func (c *BaseHTTPClient) handleAPIError(response map[string]interface{}) error {
 
 // Request performs the Request operation.
 func (c *BaseHTTPClient) Request(method, path string, params map[string]interface{}) (map[string]interface{}, error) {
-	body, _, err := c.requestBody(context.Background(), method, path, params)
+	receipt, err := c.requestBody(context.Background(), method, path, params)
 	if err != nil {
 		return nil, err
 	}
 
 	var data map[string]interface{}
-	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, errors.NewBingXException("Invalid JSON response from API", 0, map[string]interface{}{"raw": string(body)})
+	if err := json.Unmarshal(receipt.body, &data); err != nil {
+		return nil, errors.NewBingXException("Invalid JSON response from API", 0, map[string]interface{}{"raw": string(receipt.body)})
 	}
 
 	return data, nil
@@ -240,33 +237,37 @@ func (c *BaseHTTPClient) Request(method, path string, params map[string]interfac
 
 // RequestJSON performs the RequestJSON operation.
 func (c *BaseHTTPClient) RequestJSON(method, path string, params map[string]interface{}, result interface{}) error {
-	body, _, err := c.requestBody(context.Background(), method, path, params)
+	receipt, err := c.requestBody(context.Background(), method, path, params)
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(body, result); err != nil {
-		return errors.NewBingXException("Invalid JSON response from API", 0, map[string]interface{}{"raw": string(body)})
+	if err := json.Unmarshal(receipt.body, result); err != nil {
+		return errors.NewBingXException("Invalid JSON response from API", 0, map[string]interface{}{"raw": string(receipt.body)})
 	}
 
 	return nil
 }
 
-// RequestRaw executes a request with ctx and returns its exact response body.
+// RequestRaw executes one HTTP request with ctx and a bounded body read.
+// Complete rejected responses return a receipt AND an error; incomplete or
+// oversized responses return nil. The SDK does not retry requests.
 func (c *BaseHTTPClient) RequestRaw(ctx context.Context, method, path string, params map[string]interface{}) (*RawResponse, error) {
-	body, retrievedAt, err := c.requestBody(ctx, method, path, params)
+	receipt, err := c.requestBody(ctx, method, path, params)
 	if err != nil {
+		if receipt != nil {
+			return receipt.clone(), &ResponseError{cause: err, receipt: receipt}
+		}
 		return nil, err
 	}
-
-	return &RawResponse{
-		Body:        append([]byte(nil), body...),
-		RetrievedAt: retrievedAt,
-	}, nil
+	return receipt.clone(), nil
 }
 
 // requestBody performs the requestBody operation.
-func (c *BaseHTTPClient) requestBody(ctx context.Context, method, path string, params map[string]interface{}) ([]byte, time.Time, error) {
+func (c *BaseHTTPClient) requestBody(ctx context.Context, method, path string, params map[string]interface{}) (*RawResponse, error) {
+	if err := c.validateLimit(); err != nil {
+		return nil, err
+	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -309,7 +310,7 @@ func (c *BaseHTTPClient) requestBody(ctx context.Context, method, path string, p
 	}
 
 	if err != nil {
-		return nil, time.Time{}, errors.NewBingXException("Failed to create request: "+err.Error(), 0, nil)
+		return nil, &RequestError{operation: "failed to create HTTP request", cause: err}
 	}
 
 	for k, v := range c.headers() {
@@ -318,34 +319,44 @@ func (c *BaseHTTPClient) requestBody(ctx context.Context, method, path string, p
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, time.Time{}, errors.NewBingXException("HTTP request failed: "+err.Error(), 0, nil)
+		return nil, &RequestError{operation: "HTTP request failed", cause: err}
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, c.maxResponseBytes+1))
+	if int64(len(body)) > c.maxResponseBytes {
+		return nil, &ResponseTooLargeError{Limit: c.maxResponseBytes}
+	}
 	if err != nil {
-		return nil, time.Time{}, errors.NewBingXException("Failed to read response: "+err.Error(), 0, nil)
+		return nil, &IncompleteResponseError{cause: err}
 	}
 	retrievedAt := time.Now()
+	if resp.ContentLength >= 0 && int64(len(body)) != resp.ContentLength {
+		return nil, &IncompleteResponseError{cause: io.ErrUnexpectedEOF}
+	}
+	receipt := &RawResponse{
+		body: body, completedAt: retrievedAt, statusCode: resp.StatusCode,
+		headers: safeHeaders(resp.Header), route: safeRoute(path), selectors: c.safeSelectors(requestParams),
+	}
 
 	var data map[string]interface{}
 	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, retrievedAt, errors.NewBingXException("Invalid JSON response from API", 0, map[string]interface{}{"raw": string(body)})
+		return receipt, errors.NewBingXException("Invalid JSON response from API", 0, map[string]interface{}{"raw": string(body)})
 	}
 
 	if err := c.handleAPIError(data); err != nil {
-		return nil, retrievedAt, err
+		return receipt, err
 	}
 
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		return nil, retrievedAt, errors.NewBingXException(
-			fmt.Sprintf("HTTP request failed with status %s", resp.Status),
+		return receipt, errors.NewBingXException(
+			fmt.Sprintf("HTTP request failed with status %d", resp.StatusCode),
 			resp.StatusCode,
 			data,
 		)
 	}
 
-	return body, retrievedAt, nil
+	return receipt, nil
 }
 
 // GetEndpoint performs the GetEndpoint operation.

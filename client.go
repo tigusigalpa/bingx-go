@@ -1,6 +1,7 @@
 package bingx
 
 import (
+	stdhttp "net/http"
 	"sync"
 
 	"github.com/tigusigalpa/bingx-go/v2/http"
@@ -31,18 +32,21 @@ func NewClient(apiKey, apiSecret string, options ...ClientOption) *Client {
 	config := &ClientConfig{
 		BaseURI:           "https://open-api.bingx.com",
 		SignatureEncoding: "hex",
+		MaxResponseBytes:  http.DefaultMaxResponseBytes,
 	}
 
 	for _, opt := range options {
 		opt(config)
 	}
 
-	httpClient := http.NewBaseHTTPClient(
+	httpClient := http.NewBaseHTTPClientWithOptions(
 		apiKey,
 		apiSecret,
 		config.BaseURI,
 		config.SourceKey,
 		config.SignatureEncoding,
+		http.WithHTTPClient(config.HTTPClient),
+		http.WithMaxResponseBytes(config.MaxResponseBytes),
 	)
 
 	client := &Client{
@@ -76,6 +80,19 @@ type ClientConfig struct {
 	BaseURI           string
 	SourceKey         string
 	SignatureEncoding string
+	HTTPClient        *stdhttp.Client
+	MaxResponseBytes  int64
+}
+
+// WithHTTPClient injects an HTTP client with its transport and timeout policy.
+func WithHTTPClient(client *stdhttp.Client) ClientOption {
+	return func(c *ClientConfig) { c.HTTPClient = client }
+}
+
+// WithMaxResponseBytes sets the positive maximum body size for every response.
+// Invalid values return http.ErrInvalidResponseLimit when a request is attempted.
+func WithMaxResponseBytes(limit int64) ClientOption {
+	return func(c *ClientConfig) { c.MaxResponseBytes = limit }
 }
 
 // ClientOption represents a BingX API component or value.

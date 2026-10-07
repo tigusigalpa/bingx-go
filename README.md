@@ -1032,6 +1032,8 @@ fmt.Println("Best ask:", ticker.AskPrice)
 
 ### Raw market responses and cancellation
 
+All responses are bounded to 16 MiB by default, including error bodies. Use `WithHTTPClient(*http.Client)` for an isolated transport/timeout policy and `WithMaxResponseBytes(int64)` for a positive body limit. Raw accessors expose immutable completion receipts; complete rejected responses retain evidence while oversized/incomplete bodies do not. See [bounded HTTP receipts](docs/HTTP_RECEIPTS.md) for configuration, typed errors, safe metadata, retry ownership and historical admission restrictions.
+
 For data provenance or cancellation-sensitive workflows, use the `...Raw` market methods. They accept a `context.Context` and return the exact HTTP body without a second request or JSON re-encoding.
 
 ```go

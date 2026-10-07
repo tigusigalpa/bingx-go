@@ -1,0 +1,46 @@
+{
+  "classification": "documentation",
+  "source": "https://github.com/BingX-API/docs-v3/blob/1e8fae7f702525e99fdf7cf96b67070b51c33644/static/js/app.8bc50bc0c8a6a308c3e4.js",
+  "secondary_source": "https://github.com/BingX-API/api-ai-skills/blob/5fb44d121b7e10ef3493bb4de21fedf7e5c98ac6/skills/swap-market/api-reference.md",
+  "reviewed_at": "2026-10-07",
+  "historical_trades": {
+    "route": "/openApi/swap/v1/market/historicalTrades",
+    "documentation_module": "vFCS",
+    "selectors": ["symbol", "fromId", "limit"],
+    "documented_id_type": "string",
+    "documented_time_unit": "milliseconds",
+    "documented_quantity_fields": ["qty", "quoteQty"],
+    "from_id_direction": "unproven",
+    "from_id_inclusive": "unproven",
+    "quantity_units": "unproven",
+    "historical_admission": false,
+    "sdk_method_added": false
+  },
+  "funding": {
+    "route": "/openApi/swap/v2/quote/fundingRate",
+    "documentation_module": "kGAv",
+    "documentation_clarified_at": "2026-08-31",
+    "selectors": ["symbol", "startTime", "endTime", "limit"],
+    "documented_fields": ["symbol", "fundingRate", "fundingTime"],
+    "funding_time_unit": "Unix milliseconds, settlement time",
+    "reference_describes": "completed historical settlements only, excluding current and estimated next-settlement rates",
+    "settled_history": "documented",
+    "next_funding_time_returned": false,
+    "secondary_source_conflict": "AI reference describes current/next fields; the full official reference explicitly clarifies historical settlement semantics",
+    "response_example": {
+      "code": 0,
+      "msg": "",
+      "data": [{"symbol": "QNT-USDT", "fundingRate": "0.00027100", "fundingTime": 1702713600000}]
+    },
+    "response_example_origin": "first row of the documentation example, not a live capture",
+    "unsupported_semantics": ["pagination order/inclusivity", "guaranteed complete time-range coverage"],
+    "historical_admission": "application-owned; settlement documented, completeness still requires validation"
+  },
+  "legacy_aggregate_trades": {
+    "route": "/openApi/swap/v2/market/aggTrades",
+    "documented_in_this_reference": false,
+    "silently_redirected": false,
+    "historical_admission": false
+  },
+  "live_captures": []
+}

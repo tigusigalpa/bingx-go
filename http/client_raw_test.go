@@ -2,9 +2,9 @@ package http
 
 import (
 	"context"
+	"errors"
 	stdhttp "net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -51,7 +51,7 @@ func TestRequestRawHonorsCancellation(t *testing.T) {
 	<-started
 	cancel()
 
-	if err := <-errCh; err == nil || !strings.Contains(err.Error(), context.Canceled.Error()) {
+	if err := <-errCh; !errors.Is(err, context.Canceled) {
 		t.Fatalf("expected context cancellation, got %v", err)
 	}
 }

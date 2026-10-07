@@ -14,6 +14,12 @@ func (e *BingXException) Error() string {
 	return e.Message
 }
 
+// GoString keeps response payloads out of %#v diagnostics. Use GetResponse for
+// explicit evidence access rather than logging potentially sensitive payloads.
+func (e BingXException) GoString() string {
+	return fmt.Sprintf("BingXException{Code:%d}", e.Code)
+}
+
 // GetResponse performs the GetResponse operation.
 func (e *BingXException) GetResponse() map[string]interface{} {
 	return e.Response
