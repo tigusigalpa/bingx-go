@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.1] - 2026-10-07
+
+### Fixed
+
+- Rewrote the safe-selector character predicate without changing its accepted values, satisfying the CI staticcheck quick-fix rule.
+
 ## [2.6.0] - 2026-10-07
 
 ### Added

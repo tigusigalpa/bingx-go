@@ -162,7 +162,7 @@ func (c *BaseHTTPClient) safeSelectors(params map[string]interface{}) map[string
 		}
 		if key == "symbol" || key == "interval" || key == "period" {
 			if value == "" || strings.IndexFunc(value, func(r rune) bool {
-				return !(r >= 'A' && r <= 'Z' || r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '-' || r == '_')
+				return (r < 'A' || r > 'Z') && (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' && r != '_'
 			}) >= 0 {
 				continue
 			}
