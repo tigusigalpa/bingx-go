@@ -456,3 +456,32 @@ func TestDeclaredLengthMismatchAndRequestCreationError(t *testing.T) {
 		t.Fatalf("invalid URL not safely rejected: %v / %v", receipt, err)
 	}
 }
+
+type failingBoundaryBody struct {
+	cause  error
+	closed bool
+}
+
+func (b *failingBoundaryBody) Read(p []byte) (int, error) {
+	for i := range p {
+		p[i] = ' '
+	}
+	return len(p), b.cause
+}
+
+func (b *failingBoundaryBody) Close() error { b.closed = true; return nil }
+
+func TestReadErrorIdentityAtSizeBoundary(t *testing.T) {
+	for _, cause := range []error{context.Canceled, context.DeadlineExceeded, io.ErrUnexpectedEOF} {
+		t.Run(cause.Error(), func(t *testing.T) {
+			body := &failingBoundaryBody{cause: cause}
+			client := newLimitedClient("http://custom.invalid", 128, roundTripFunc(func(r *stdhttp.Request) (*stdhttp.Response, error) {
+				return &stdhttp.Response{StatusCode: 200, ContentLength: -1, Body: body, Header: make(stdhttp.Header)}, nil
+			}))
+			receipt, err := client.RequestRaw(context.Background(), "GET", "/boundary", nil)
+			if receipt != nil || !errors.Is(err, ErrIncompleteResponse) || !errors.Is(err, cause) || !body.closed {
+				t.Fatalf("boundary read masked its error or returned evidence: %v / %v", receipt, err)
+			}
+		})
+	}
+}

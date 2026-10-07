@@ -55,6 +55,8 @@ Headers are allowlisted to validated Date, Retry-After, Content-Type (media type
 
 Treat **every non-nil error as failure**, even when evidence is present. Map-based methods retain their original provider exception types; raw errors wrap those exceptions for `errors.As`. No partial body is ever a successful raw result.
 
+If a reader returns both bytes and an error at the size boundary, incomplete-read classification takes precedence, preserving cancellation/deadline identity. There is no receipt in either case.
+
 ## Retry ownership
 
 The SDK adds no retry loop and makes one `http.Client.Do` call per request. Every raw market wrapper passes through the supplied context. The application owns pagination, rate limits, finite retry count, an overall deadline and cancellable backoff. Do not retry canceled operations or malformed/oversized bodies unchanged. Use safe Retry-After evidence when appropriate. Standard/custom transport retries and HTTP redirects are part of the injected client's policy; they must also be bounded. Coordinate one retry owner rather than stacking retry loops.

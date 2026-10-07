@@ -324,11 +324,13 @@ func (c *BaseHTTPClient) requestBody(ctx context.Context, method, path string, p
 	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, c.maxResponseBytes+1))
-	if int64(len(body)) > c.maxResponseBytes {
-		return nil, &ResponseTooLargeError{Limit: c.maxResponseBytes}
-	}
+	// A reader may return bytes and an error together. Preserve cancellation or
+	// deadline identity even when that last read also crosses the size boundary.
 	if err != nil {
 		return nil, &IncompleteResponseError{cause: err}
+	}
+	if int64(len(body)) > c.maxResponseBytes {
+		return nil, &ResponseTooLargeError{Limit: c.maxResponseBytes}
 	}
 	retrievedAt := time.Now()
 	if resp.ContentLength >= 0 && int64(len(body)) != resp.ContentLength {

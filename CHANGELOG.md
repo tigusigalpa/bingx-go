@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Rewrote the safe-selector character predicate without changing its accepted values, satisfying the CI staticcheck quick-fix rule.
+- Preserved cancellation/deadline and I/O error identity when a body reader returns bytes and an error together at the configured size boundary; added regression tests.
 
 ## [2.6.0] - 2026-10-07
 
